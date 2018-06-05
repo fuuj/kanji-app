@@ -22,7 +22,7 @@ def test_password(password, hash)
   BCrypt::Password.new(hash) == password
 end
 
-class Application < Sinatra::Base
+class KanjiApp < Sinatra::Base
   enable :sessions
 
   get '/' do
