@@ -1,12 +1,17 @@
 <h2>アカウントを作る</h2>
+<% if @error %>
+  <% @error.each do |s| %>
+    <p class="error"><%= s %></p>
+  <% end %>
+<% end %>
 <form action="/signup" method="POST">
   ニックネーム:<br>
-  <input name="name" placeholder="Name" />
+  <input name="name" placeholder="3~20文字" />
   メールアドレス:<br>
-  <input name="email" placeholder="Email" />
+  <input name="email" placeholder="3~20文字" />
   パスワード:<br>
-  <input name="password" placeholder="Password" />
+  <input name="password" placeholder="8~20文字" />
   パスワードを再入力:<br>
-  <input name="re_password" placeholder="Re-enter password" />
+  <input name="password_confirmation" placeholder="Re-enter password" />
   <input type="submit" value="Submit" />
 </form>
