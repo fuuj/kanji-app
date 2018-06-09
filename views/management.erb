@@ -1,0 +1,49 @@
+<table border>
+  <tr>
+    <th>id</th>
+    <th>name</th>
+    <th>email</th>
+    <th>password</th>
+  </tr>
+
+  <% @users.each do |user| %>
+  <tr>
+    <td><%= user.id %></td>
+    <td><%= user.name %></td>
+    <td><%= user.email %></td>
+    <td><%= user.password %></td>
+    <form method="post" action="delUser">
+    <td><input type="submit" value="delete"></td>
+      <input type="hidden" name="id" value="<%= user.id %>">
+      <input type="hidden" name="_method" value="delete">
+    </form>
+  </tr>
+  <% end %>
+</table>
+
+<table border>
+  <tr>
+    <th>character</th>
+    <th>reading</th>
+  </tr>
+
+  <% @kanjis.each do |kanji| %>
+  <tr>
+    <td><%= kanji.character %></td>
+    <td><%= kanji.reading %></td>
+    <form method="post" action="delKanji">
+    <td><input type="submit" value="delete"></td>
+      <input type="hidden" name="character" value="<%= kanji.character %>">
+      <input type="hidden" name="_method" value="delete">
+    </form>
+  </tr>
+  <% end %>
+
+  <tr>
+  <form method="post" action="newKanji">
+    <td><input type="text" name="character"></td>
+    <td><input type="text" name="reading"></td>
+    <td><input type="submit" value="add"></td>
+    </form>
+  </tr>
+</table>
