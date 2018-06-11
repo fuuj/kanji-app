@@ -3,23 +3,21 @@ require 'active_record'
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'bcrypt'
+require 'pry'
  
 ActiveRecord::Base.configurations = YAML.load_file('database.yml')
 ActiveRecord::Base.establish_connection(:development)
 
 class User < ActiveRecord::Base
+  validates :name, :email, presence: true
+  validates :name, :email, length: {in: 3..20}
+  validates :password_digest, length: {in: 8..20}
+  # 以下の呪文により, :password, :password_confirmation, それらのpresence, 一致のvalidationがすべて自動で追加される.
+  has_secure_password
 end
 class Kanji < ActiveRecord::Base
 end
 class Creation < ActiveRecord::Base
-end
-
-def hash_password(password)
-  BCrypt::Password.create(password).to_s
-end
-
-def test_password(password, hash)
-  BCrypt::Password.new(hash) == password
 end
 
 class KanjiApp < Sinatra::Base
@@ -43,7 +41,7 @@ class KanjiApp < Sinatra::Base
 
   post '/login' do
     user = User.find_by(email: params[:email])
-    if user && test_password(params[:password], user.password)
+    if user && user.authenticate(params[:password])
       session.clear
       session[:user_id] = user.id
       redirect '/mypage'
@@ -62,15 +60,22 @@ class KanjiApp < Sinatra::Base
   end
 
   post '/signup' do
-    user = User.create(
-      id: nil,
-      name: params[:name],
-      email: params[:email],
-      password: hash_password(params[:password]) #password_hash
-    )
-    session.clear
-    session[:user_id] = user.id
-    redirect '/mypage'
+    user = User.new(
+        id: nil,
+        name: params[:name],
+        email: params[:email],
+        password: params[:password],
+        password_confirmation: params[:password_confirmation]
+      )
+    if user.save
+      # セッションに追加する(ログイン状態になる)
+      session.clear
+      session[:user_id] = user.id
+      redirect '/mypage'
+    else
+      @error = user.errors.full_messages
+      erb :signup
+    end
   end
 
   post '/logout' do
