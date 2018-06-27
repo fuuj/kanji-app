@@ -4,21 +4,9 @@ require 'sinatra/base'
 require 'sinatra/reloader'
 require 'bcrypt'
 require 'pry'
- 
-ActiveRecord::Base.configurations = YAML.load_file('database.yml')
-ActiveRecord::Base.establish_connection(:development)
-
-class User < ActiveRecord::Base
-  validates :name, :email, presence: true
-  validates :name, :email, length: {in: 3..20}
-  validates :password_digest, length: {in: 8..20}
-  # 以下の呪文により, :password, :password_confirmation, それらのpresence, 一致のvalidationがすべて自動で追加される.
-  has_secure_password
-end
-class Kanji < ActiveRecord::Base
-end
-class Creation < ActiveRecord::Base
-end
+require_relative 'models/user'
+require_relative 'models/kanji'
+require_relative 'models/creation'
 
 class KanjiApp < Sinatra::Base
   enable :sessions
