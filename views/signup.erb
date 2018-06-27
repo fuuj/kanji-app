@@ -5,13 +5,9 @@
   <% end %>
 <% end %>
 <form action="/signup" method="POST">
-  ニックネーム:<br>
-  <input name="name" placeholder="3~20文字" />
-  メールアドレス:<br>
-  <input name="email" placeholder="3~20文字" />
-  パスワード:<br>
-  <input name="password" placeholder="8~20文字" />
-  パスワードを再入力:<br>
-  <input name="password_confirmation" placeholder="Re-enter password" />
-  <input type="submit" value="Submit" />
+  <input name="name" placeholder="ニックネーム(3~20文字)" />
+  <input name="email" placeholder="メールアドレス(3~20文字)" />
+  <input name="password" type="password" placeholder="パスワード(8~20文字)" />
+  <input name="password_confirmation" type="password" placeholder="パスワードを再入力" />
+  <input type="submit" value="登録" />
 </form>

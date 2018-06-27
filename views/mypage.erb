@@ -1,11 +1,19 @@
-<h2>My Page</h2>
-<p>Welcome, <%= current_user.name %>.</p>
+<h2>マイページ</h2>
+
+<% if @error %>
+  <% @error.each do |s| %>
+    <p class="error"><%= s %></p>
+  <% end %>
+<% end %>
+
+<p>ようこそ, <%= current_user.name %> さん.</p>
+
 <form action="/logout" method="POST">
-  <input type="submit" value="Log Out" onclick="alert('Done logout.')"; />
+  <input type="submit" value="ログアウト" onclick="alert('ログアウトしました')"; />
 </form>
 
-<form action>
-	<input type="text">
+<form action="/kanji/register" method="POST">
+	<input name="kanji">
 	<input type="submit" value="登録">
 <form>
 
@@ -13,6 +21,6 @@
 	<input type="submit" value="テストを受ける" />
 </form>
 
-<form acyion="/drill" method="POST">
+<form action="/drill" method="POST">
 	<input type="submit" value="ドリルを見る" />
 </form>
