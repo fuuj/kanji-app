@@ -1,0 +1,5 @@
+
+<h3>あなたの漢字ドリル</h3>
+<% @user.kanjis.each do |kanji| %>
+    <span><%= kanji.kanji%></span>
+<% end %>
