@@ -12,15 +12,16 @@
   <input type="submit" value="ログアウト" onclick="alert('ログアウトしました')"; />
 </form>
 
+<p id="message"><%= @message %></p>
 <form action="/kanji/register" method="POST">
 	<input name="kanji">
 	<input type="submit" value="登録">
 <form>
 
-<form action="/test" method="POST">
+<form action="/test" method="GET">
 	<input type="submit" value="テストを受ける" />
 </form>
 
-<form action="/drill" method="POST">
+<form action="/drill" method="GET">
 	<input type="submit" value="ドリルを見る" />
 </form>
