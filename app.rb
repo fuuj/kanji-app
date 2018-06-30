@@ -6,6 +6,7 @@ require 'bcrypt'
 require 'pry'
 require_relative 'models/user'
 require_relative 'models/kanji'
+require_relative 'models/reading'
 require_relative 'models/creation'
 
 class KanjiApp < Sinatra::Base
@@ -79,6 +80,26 @@ class KanjiApp < Sinatra::Base
     end
   end
 
+  post '/kanji/register' do
+    kanji = Kanji.find_by(kanji: params[:kanji])
+    if not kanji
+      @error = ['その漢字は登録できません']
+      erb :mypage
+    else
+      creation = Creation.new(
+          id: nil,
+          user_id: current_user.id,
+          kanji_id: kanji.id
+        )
+      if creation.save
+        redirect '/mypage'
+      else
+        @error = creation.errors.full_messages
+        erb :mypage
+      end
+    end
+  end
+
   helpers do
     def current_user
       if session[:user_id]
@@ -93,6 +114,7 @@ class KanjiApp < Sinatra::Base
   get '/management' do
     @users = User.all
     @kanjis = Kanji.all
+    @readings = Reading.all
     @creations = Creation.all
     erb :management
   end

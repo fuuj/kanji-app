@@ -1,3 +1,4 @@
+<h3>All users</h3>
 <table border>
   <tr>
     <th>id</th>
@@ -5,7 +6,6 @@
     <th>email</th>
     <th>password_digest</th>
   </tr>
-
   <% @users.each do |user| %>
   <tr>
     <td><%= user.id %></td>
@@ -21,29 +21,48 @@
   <% end %>
 </table>
 
+<h3>All kanjis</h3>
 <table border>
   <tr>
-    <th>character</th>
-    <th>reading</th>
+    <th>id</th>
+    <th>kanji</th>
   </tr>
-
   <% @kanjis.each do |kanji| %>
   <tr>
-    <td><%= kanji.character %></td>
-    <td><%= kanji.reading %></td>
-    <form method="post" action="delKanji">
-    <td><input type="submit" value="delete"></td>
-      <input type="hidden" name="character" value="<%= kanji.character %>">
-      <input type="hidden" name="_method" value="delete">
-    </form>
+    <td><%= kanji.id%></td>
+    <td><%= kanji.kanji%></td>
   </tr>
   <% end %>
+</table>
 
+<h3>All readings</h3>
+<table border>
   <tr>
-  <form method="post" action="newKanji">
-    <td><input type="text" name="character"></td>
-    <td><input type="text" name="reading"></td>
-    <td><input type="submit" value="add"></td>
-    </form>
+    <th>id</th>
+    <th>kanji_id</th>
+    <th>reading</th>
   </tr>
+  <% @readings.each do |reading| %>
+  <tr>
+    <td><%= reading.id %></td>
+    <td><%= reading.kanji_id %></td>
+    <td><%= reading.reading %></td>
+  </tr>
+  <% end %>
+</table>
+
+<h3>All creations</h3>
+<table border>
+  <tr>
+    <th>id</th>
+    <th>user_id</th>
+    <th>kanji_id</th>
+  </tr>
+  <% @creations.each do |creation| %>
+  <tr>
+    <td><%= creation.id %></td>
+    <td><%= creation.user_id %></td>
+    <td><%= creation.kanji_id%></td>
+  </tr>
+  <% end %>
 </table>
