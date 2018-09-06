@@ -1,64 +1,76 @@
+
+<div class="container">
 <h3>All users</h3>
-<table border>
-  <tr>
+<table>
+  <thead>
     <th>id</th>
     <th>name</th>
     <th>email</th>
     <th>password_digest</th>
-  </tr>
+  </thead>
   <% @users.each do |user| %>
-  <tr>
-    <td><%= user.id %></td>
-    <td><%= user.name %></td>
-    <td><%= user.email %></td>
-    <td><%= user.password_digest %></td>
-    <form method="post" action="delUser">
-    <td><input type="submit" value="delete"></td>
-      <input type="hidden" name="id" value="<%= user.id %>">
-      <input type="hidden" name="_method" value="delete">
-    </form>
-  </tr>
+  <tbody>
+      <tr>
+        <td><%= user.id %></td>
+        <td><%= user.name %></td>
+        <td><%= user.email %></td>
+        <td><%= user.password_digest %></td>
+        <form method="post" action="delUser">
+        <td><input type="submit" value="delete"></td>
+          <input type="hidden" name="id" value="<%= user.id %>">
+          <input type="hidden" name="_method" value="delete">
+        </form>
+      </tr>
+  </tbody>
   <% end %>
 </table>
+</div>
 
-<h3>All kanjis</h3>
-<table border>
-  <tr>
-    <th>id</th>
-    <th>kanji</th>
-  </tr>
-  <% @kanjis.each do |kanji| %>
-  <tr>
-    <td><%= kanji.id%></td>
-    <td><%= kanji.kanji%></td>
-  </tr>
-  <% end %>
-</table>
+<div class="container">
+    <h3>All kanjis</h3>
+    <div class="row">
+      <% @kanjis.first(50).each do |kanji| %>
+        <div class="column">
+            <span><%= kanji.kanji%></span>
+        </div>
+      <% end %>
+    </div>
+</div>
 
-<h3>All readings</h3>
-<table border>
-  <tr>
-    <th>id</th>
-    <th>kanji_id</th>
-    <th>reading</th>
-  </tr>
-  <% @readings.each do |reading| %>
-  <tr>
-    <td><%= reading.id %></td>
-    <td><%= reading.kanji_id %></td>
-    <td><%= reading.reading %></td>
-  </tr>
-  <% end %>
-</table>
+<div class="container">
+    <h3>All readings</h3>
+    <table>
+      <tr>
+        <th>id</th>
+        <th>kanji_id</th>
+        <th>reading</th>
+      </tr>
+      <% @readings.first(5).each do |reading| %>
+      <tr>
+        <td><%= reading.id %></td>
+        <td><%= reading.kanji_id %></td>
+        <td><%= reading.reading %></td>
+      </tr>
+      <% end %>
+      <% @readings.last(5).each do |reading| %>
+      <tr>
+        <td><%= reading.id %></td>
+        <td><%= reading.kanji_id %></td>
+        <td><%= reading.reading %></td>
+      </tr>
+      <% end %>
+    </table>
+</div>
 
-<h3>All creations</h3>
-<table border>
+<div class="container">
+<h3>Recent creations</h3>
+<table>
   <tr>
     <th>id</th>
     <th>user_id</th>
     <th>kanji_id</th>
   </tr>
-  <% @creations.each do |creation| %>
+  <% @creations.last(10).each do |creation| %>
   <tr>
     <td><%= creation.id %></td>
     <td><%= creation.user_id %></td>
@@ -66,3 +78,4 @@
   </tr>
   <% end %>
 </table>
+</div>
