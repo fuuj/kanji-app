@@ -5,11 +5,12 @@
 
 <div class="container">
 <h2>問題</h2>
-<p>「学」は,なんと読む?</p>
-<a class="button">ハク</a>
-<a class="button">ガク</a>
-<a class="button">タク</a>
-<a class="button">ロク</a>
+<% quiz_kanji, answer_reading, wrong_readings = @kanji_quiz_choices%>
+<p>「<%= quiz_kanji %>」は,なんと読む?</p>
+<a class="button"><%= answer_reading%></a>
+<a class="button"><%= wrong_readings[0]%></a>
+<a class="button"><%= wrong_readings[1]%></a>
+<a class="button"><%= wrong_readings[2]%></a>
 </div>
 </div>
 

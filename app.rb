@@ -16,6 +16,7 @@ class KanjiApp < Sinatra::Base
     if current_user
       erb :mypage
     else
+      @kanji_quiz_choices = kanji_quiz_choices(Kanji.all)
       erb :index
     end
   end
@@ -118,6 +119,19 @@ class KanjiApp < Sinatra::Base
       else
         nil
       end
+    end
+
+    def kanji_quiz_choices(kanjis)
+      # 引数kanjisはKanji.allやcurrent_user.kanjisなど, クイズにしたい漢字の母集団.
+      # kanjisから漢字を1つランダムに取る
+      quiz_kanji = kanjis.sample
+      correct_readings = quiz_kanji.readings.pluck(:reading)
+      # その漢字の読みを1つランダムに取る
+      answer_reading = correct_readings.sample
+      # 間違った読みを3つ取る
+      three_wrong_readings = Reading.where.not(reading: correct_readings).pluck(:reading).sample(3)
+      # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
+      [quiz_kanji.kanji, answer_reading, three_wrong_readings]
     end
   end
 
