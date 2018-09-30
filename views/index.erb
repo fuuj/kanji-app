@@ -1,23 +1,15 @@
-<div class="container">
-<h1>俺の漢字</h1>
-<h3>My Kanji Drill</h3>
-</div>
 
 <div class="container">
-<h2>問題</h2>
-<% quiz_kanji, answer_reading, wrong_readings = @kanji_quiz_choices%>
-<p>「<%= quiz_kanji %>」は,なんと読む?</p>
-<a class="button"><%= answer_reading%></a>
-<a class="button"><%= wrong_readings[0]%></a>
-<a class="button"><%= wrong_readings[1]%></a>
-<a class="button"><%= wrong_readings[2]%></a>
-</div>
+    <h1>俺の漢字</h1>
+    <h3>My Kanji Drill</h3>
 </div>
 
+<%= erb :quiz%>
+
 <div class="container">
-<p>あなただけの漢字ドリルを作ろう!</p>
-<a class="button " href="/signup">Sign Up</a>
-<a class="button" href="/login">Log In</a>
-<a class="button button-black button-outline" href="/management">Management</a>
+    <p>あなただけの漢字ドリルを作ろう!</p>
+    <a class="button " href="/signup">Sign Up</a>
+    <a class="button" href="/login">Log In</a>
+    <a class="button button-black button-outline" href="/management">Management</a>
 </div>
 

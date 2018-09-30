@@ -8,7 +8,7 @@
     <th>email</th>
     <th>password_digest</th>
   </thead>
-  <% @users.each do |user| %>
+  <% User.all.each do |user| %>
   <tbody>
       <tr>
         <td><%= user.id %></td>
@@ -29,7 +29,7 @@
 <div class="container">
     <h3>Kanjis</h3>
     <div class="row">
-      <% @kanjis.first(50).each do |kanji| %>
+      <% Kanji.all.first(50).each do |kanji| %>
         <div class="column">
             <span><%= kanji.kanji%></span>
         </div>
@@ -45,14 +45,14 @@
         <th>kanji_id</th>
         <th>reading</th>
       </tr>
-      <% @readings.first(5).each do |reading| %>
+      <% Reading.all.first(5).each do |reading| %>
       <tr>
         <td><%= reading.id %></td>
         <td><%= reading.kanji_id %></td>
         <td><%= reading.reading %></td>
       </tr>
       <% end %>
-      <% @readings.last(5).each do |reading| %>
+      <% Reading.all.last(5).each do |reading| %>
       <tr>
         <td><%= reading.id %></td>
         <td><%= reading.kanji_id %></td>
@@ -70,7 +70,7 @@
     <th>user_id</th>
     <th>kanji_id</th>
   </tr>
-  <% @creations.last(10).each do |creation| %>
+  <% Creation.all.last(10).each do |creation| %>
   <tr>
     <td><%= creation.id %></td>
     <td><%= creation.user_id %></td>

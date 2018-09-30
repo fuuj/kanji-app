@@ -16,7 +16,6 @@ class KanjiApp < Sinatra::Base
     if current_user
       erb :mypage
     else
-      @kanji_quiz_choices = kanji_quiz_choices(Kanji.all)
       erb :index
     end
   end
@@ -105,12 +104,12 @@ class KanjiApp < Sinatra::Base
 
   get '/drill' do
     if current_user
-      @user = current_user
       erb :drill
     else
       redirect '/'
     end
   end
+
 
   helpers do
     def current_user
@@ -121,8 +120,9 @@ class KanjiApp < Sinatra::Base
       end
     end
 
-    def kanji_quiz_choices(kanjis)
-      # 引数kanjisはKanji.allやcurrent_user.kanjisなど, クイズにしたい漢字の母集団.
+    def kanji_quiz_choices()
+      # ユーザークイズはユーザーが保存した漢字から, ゲストクイズならすべての漢字から問題を作る
+      kanjis = current_user ? current_user.kanjis : Kanji.all
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
       correct_readings = quiz_kanji.readings.pluck(:reading)
@@ -137,10 +137,6 @@ class KanjiApp < Sinatra::Base
 
 
   get '/management' do
-    @users = User.all
-    @kanjis = Kanji.all
-    @readings = Reading.all
-    @creations = Creation.all
     erb :management
   end
 
