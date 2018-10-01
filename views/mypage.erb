@@ -1,30 +1,20 @@
 <div class="container">
-<h2>マイページ</h2>
+    <h2>マイページ</h2>
+    <% if @error %>
+        <% @error.each do |s| %>
+            <p class="error"><%= s %></p>
+        <% end %>
+    <% end %>
+    <p>ようこそ, <%= current_user.name %> さん.</p>
+    <a class="button " href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
+</div>
 
-<% if @error %>
-  <% @error.each do |s| %>
-    <p class="error"><%= s %></p>
-  <% end %>
-<% end %>
-
-<p>ようこそ, <%= current_user.name %> さん.</p>
-
-<form action="/logout" method="POST">
-  <input type="submit" value="ログアウト" onclick="alert('ログアウトしました')"; />
-</form>
-
-<p id="message"><%= @message %></p>
-<form action="/kanji/register" method="POST">
-	<input name="kanji">
-	<input type="submit" value="登録">
-<form>
-
-<form action="/test" method="GET">
-	<input type="submit" value="テストを受ける" />
-</form>
-
-<form action="/drill" method="GET">
-	<input type="submit" value="ドリルを見る" />
-</form>
-
+<div class="container">
+    <p id="message"><%= @message %></p>
+    <form action="/kanji_register" method="POST">
+        <input name="kanji">
+        <input type="submit" value="登録">
+    </form>
+    <a class="button" href="/mytest">テストを受ける</a>
+    <a class="button" href="/mydrill">ドリルを見る</a>
 </div>

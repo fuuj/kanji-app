@@ -13,16 +13,12 @@ class KanjiApp < Sinatra::Base
   enable :sessions
 
   get '/' do
-    if current_user
-      erb :mypage
-    else
-      erb :index
-    end
+    erb :index
   end
 
   get '/login' do
     if current_user
-      erb :mypage
+      redirect '/mypage'
     else
       erb :login
     end
@@ -42,7 +38,7 @@ class KanjiApp < Sinatra::Base
 
   get '/signup' do
     if current_user
-      erb :mypage
+      redirect '/mypage'
     else
       erb :signup
     end
@@ -67,7 +63,7 @@ class KanjiApp < Sinatra::Base
     end
   end
 
-  post '/logout' do
+  get '/logout' do
     session.clear
     redirect '/'
   end
@@ -80,36 +76,38 @@ class KanjiApp < Sinatra::Base
     end
   end
 
-  post '/kanji/register' do
+  post '/kanji_register' do
     kanji = Kanji.find_by(kanji: params[:kanji])
     if not kanji
       # 漢字がテーブルになければエラーメッセージを返す
       @error = ['その漢字は登録できません']
-      erb :mypage
-    elsif current_user.creations.exists?(kanji_id: kanji.id)
-      # 漢字が登録済みなら何もしない
-      erb :mypage
-    else
+    elsif not current_user.kanjis.exists?(id: kanji.id)
       # ドリルに漢字を登録する
       creation = current_user.creations.create(kanji_id: kanji.id)
       if creation.save
         @message= '「' + kanji.kanji + '」を登録しました.'
-        erb :mypage
       else
         @error = creation.errors.full_messages
-        erb :mypage
       end
     end
+    redirect '/mypage'
   end
 
-  get '/drill' do
+  get '/mydrill' do
     if current_user
-      erb :drill
+      erb :mydrill
     else
       redirect '/'
     end
   end
 
+  get '/mytest' do
+    if current_user
+      erb :mytest
+    else
+      redirect '/'
+    end
+  end
 
   helpers do
     def current_user
