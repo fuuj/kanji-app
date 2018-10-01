@@ -13,16 +13,12 @@ class KanjiApp < Sinatra::Base
   enable :sessions
 
   get '/' do
-    if current_user
-      erb :mypage
-    else
-      erb :index
-    end
+    erb :index
   end
 
   get '/login' do
     if current_user
-      erb :mypage
+      redirect '/mypage'
     else
       erb :login
     end
@@ -42,7 +38,7 @@ class KanjiApp < Sinatra::Base
 
   get '/signup' do
     if current_user
-      erb :mypage
+      redirect '/mypage'
     else
       erb :signup
     end
@@ -67,7 +63,7 @@ class KanjiApp < Sinatra::Base
     end
   end
 
-  post '/logout' do
+  get '/logout' do
     session.clear
     redirect '/'
   end
@@ -80,32 +76,34 @@ class KanjiApp < Sinatra::Base
     end
   end
 
-  post '/kanji/register' do
+  post '/kanji_register' do
     kanji = Kanji.find_by(kanji: params[:kanji])
     if not kanji
       # 漢字がテーブルになければエラーメッセージを返す
       @error = ['その漢字は登録できません']
-      erb :mypage
-    elsif current_user.creations.exists?(kanji_id: kanji.id)
-      # 漢字が登録済みなら何もしない
-      erb :mypage
-    else
+    elsif not current_user.kanjis.exists?(id: kanji.id)
       # ドリルに漢字を登録する
       creation = current_user.creations.create(kanji_id: kanji.id)
       if creation.save
         @message= '「' + kanji.kanji + '」を登録しました.'
-        erb :mypage
       else
         @error = creation.errors.full_messages
-        erb :mypage
       end
+    end
+    redirect '/mypage'
+  end
+
+  get '/mydrill' do
+    if current_user
+      erb :mydrill
+    else
+      redirect '/'
     end
   end
 
-  get '/drill' do
+  get '/mytest' do
     if current_user
-      @user = current_user
-      erb :drill
+      erb :mytest
     else
       redirect '/'
     end
@@ -119,14 +117,24 @@ class KanjiApp < Sinatra::Base
         nil
       end
     end
+
+    def kanji_quiz_choices()
+      # ユーザークイズはユーザーが保存した漢字から, ゲストクイズならすべての漢字から問題を作る
+      kanjis = current_user ? current_user.kanjis : Kanji.all
+      # kanjisから漢字を1つランダムに取る
+      quiz_kanji = kanjis.sample
+      correct_readings = quiz_kanji.readings.pluck(:reading)
+      # その漢字の読みを1つランダムに取る
+      answer_reading = correct_readings.sample
+      # 間違った読みを3つ取る
+      three_wrong_readings = Reading.where.not(reading: correct_readings).pluck(:reading).sample(3)
+      # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
+      [quiz_kanji.kanji, answer_reading, three_wrong_readings]
+    end
   end
 
 
   get '/management' do
-    @users = User.all
-    @kanjis = Kanji.all
-    @readings = Reading.all
-    @creations = Creation.all
     erb :management
   end
 
