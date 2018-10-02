@@ -11,7 +11,10 @@ require_relative 'models/reading'
 require_relative 'models/creation'
 
 class KanjiApp < Sinatra::Base
+  # Sinatra起動中にこのファイルに加えた変更がリアルタイムに反映されるのでとっても楽.
+  register Sinatra::Reloader
   register Sinatra::Namespace
+  # sessionというハッシュ(JavaでいうHashMap)を有効化する. これはCookieを表しているのだと思う. ここにユーザーのIDを保存したりする.
   enable :sessions
 
   get '/' do
@@ -19,31 +22,24 @@ class KanjiApp < Sinatra::Base
   end
 
   get '/login' do
-    if current_user
-      redirect '/user/mypage'
-    else
-      erb :login
-    end
+    erb :login
   end
 
   post '/login' do
+    # ログインページから送られてきたメアドとパスワードはparamsハッシュに入っている. これらが正しい組み合わせならこのユーザーをログイン状態とし(すなわちsessionハッシュにuser.idを加えること), マイページへ飛ばす.
     user = User.find_by(email: params[:email])
     if user && user.authenticate(params[:password])
       session.clear
       session[:user_id] = user.id
       redirect '/user/mypage'
     else
-      @error = 'email or password was incorrect'
+      @error = 'メールアドレスとパスワードの組み合わせが正しくありません.'
       erb :login
     end
   end
 
   get '/signup' do
-    if current_user
-      redirect '/user/mypage'
-    else
-      erb :signup
-    end
+    erb :signup
   end
 
   post '/signup' do
@@ -55,8 +51,6 @@ class KanjiApp < Sinatra::Base
         password_confirmation: params[:password_confirmation]
       )
     if user.save
-      # セッションに追加する(ログイン状態になる)
-      session.clear
       session[:user_id] = user.id
       redirect '/user/mypage'
     else
@@ -81,7 +75,7 @@ class KanjiApp < Sinatra::Base
     post '/kanji_register' do
       kanji = Kanji.find_by(kanji: params[:kanji])
       if not kanji
-        # 漢字がテーブルになければエラーメッセージを返す
+        # 漢字がDBになければエラーメッセージを返す
         @error = ['その漢字は登録できません']
       elsif not current_user.kanjis.exists?(id: kanji.id)
         # ドリルに漢字を登録する
@@ -114,7 +108,7 @@ class KanjiApp < Sinatra::Base
     end
 
     def kanji_quiz_choices()
-      # ユーザークイズはユーザーが保存した漢字から, ゲストクイズならすべての漢字から問題を作る
+      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
       kanjis = current_user ? current_user.kanjis : Kanji.all
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
