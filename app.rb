@@ -1,10 +1,14 @@
 # coding:utf-8
+
 require 'active_record'
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'sinatra/namespace'
-require 'bcrypt'
 require 'pry'
+
+# require 'bundler/setup'
+# Bundler.require(:default)
+
 require_relative 'models/user'
 require_relative 'models/kanji'
 require_relative 'models/reading'
