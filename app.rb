@@ -111,18 +111,17 @@ class KanjiApp < Sinatra::Base
       end
     end
 
-    def kanji_quiz_choices()
+    def kanji_quiz()
       # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
       kanjis = current_user ? current_user.kanjis : Kanji.all
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
-      correct_readings = quiz_kanji.readings.pluck(:reading)
       # その漢字の読みを1つランダムに取る
-      answer_reading = correct_readings.sample
+      answer_reading = quiz_kanji.readings.sample
       # 間違った読みを3つ取る
-      three_wrong_readings = Reading.where.not(reading: correct_readings).pluck(:reading).sample(3)
+      three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
       # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
-      [quiz_kanji.kanji, answer_reading, three_wrong_readings]
+      [quiz_kanji.kanji, answer_reading.reading, three_wrong_readings.map {|reading| reading.reading}]
     end
   end
 

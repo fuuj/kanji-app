@@ -1,7 +1,7 @@
 
 <div class="container">
     <h2>問題</h2>
-    <% quiz_kanji, answer_reading, wrong_readings = kanji_quiz_choices%>
+    <% quiz_kanji, answer_reading, wrong_readings = kanji_quiz %>
     <p>「<%= quiz_kanji %>」は,なんと読む?</p>
     <a class="button"><%= answer_reading%></a>
     <a class="button"><%= wrong_readings[0]%></a>
