@@ -1,22 +1,15 @@
 # coding:utf-8
 
-require 'active_record'
-require 'sinatra/base'
-require 'sinatra/reloader'
-require 'sinatra/namespace'
-require 'pry'
-
-# require 'bundler/setup'
-# Bundler.require(:default)
-
-require_relative 'models/user'
-require_relative 'models/kanji'
-require_relative 'models/reading'
-require_relative 'models/creation'
+# Gemfileのgemをrequireする
+require 'bundler/setup'
+Bundler.require
+# init.rbに書かれているmodelsをrequireする.
+require_relative 'models/init'
 
 class KanjiApp < Sinatra::Base
   # Sinatra起動中にこのファイルに加えた変更がリアルタイムに反映されるのでとっても楽.
   register Sinatra::Reloader
+  # いくつかのページへのアクセスでユーザー以外を弾く仕組みに使った.
   register Sinatra::Namespace
   # sessionというハッシュ(JavaでいうHashMap)を有効化する. これはCookieを表しているのだと思う. ここにユーザーのIDを保存したりする.
   enable :sessions
