@@ -143,6 +143,8 @@ class KanjiApp < Sinatra::Base
     redirect '/management'
   end
 
+  # Users.all.sampleなどをコンソールで使ってみたいとき, 下の文のコメントを外してbundle exec ruby app.rbする.
+  # binding.pry
   run!
 end
 

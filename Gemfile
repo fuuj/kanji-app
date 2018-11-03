@@ -11,4 +11,3 @@ gem "sinatra-contrib"
 gem "bcrypt"
 gem "pry"
 gem 'milligram'
-gem 'tux'
