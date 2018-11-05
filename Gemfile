@@ -12,4 +12,4 @@ gem "bcrypt"
 gem "sqlite3"
 gem "pry"
 gem 'milligram'
-# gem 'i18n', '0.9.5'
+gem 'rack-test', '0.7.0'

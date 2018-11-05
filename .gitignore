@@ -2,3 +2,5 @@
 /.DS_Store
 /kanjiApp.db
 /main.css
+/localApps
+/.bundle/config
