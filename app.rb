@@ -129,5 +129,7 @@ class KanjiApp < Sinatra::Base
 
   # Users.all.sampleなどをコンソールで使ってみたいとき, 下の文のコメントを外してbundle exec ruby app.rbする.
   # binding.pry
+
+  run!
 end
 
