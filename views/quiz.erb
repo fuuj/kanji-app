@@ -1,10 +1,50 @@
 
 <div class="container">
     <h2>問題</h2>
-    <% quiz_kanji, answer_reading, wrong_readings = kanji_quiz_choices%>
+    <% quiz_kanji, answer_reading, wrong_readings, creation = kanji_quiz_choices%>
+
+    <SCRIPT language="JavaScript">
+     function msgt(button){
+        var result = 'あなたが選んだのは,'+  '[' +button.value + ']' + '\n' + '正解です！';
+        alert(result);
+        var creation_id = '<%= creation ? creation.id : "" %>';
+        (creation_id !== '') ? form(creation_id, 1) : location.reload()
+
+    }
+    function msgf(button){
+        var result = 'あなたが選んだのは,'+  '[' +button.value + ']' + '不正解です！' + '\n' + '正解は' + '<%= answer_reading%>';
+        alert(result);
+        var creation_id = '<%= creation ? creation.id : "" %>';
+        (creation_id !== '') ? form(creation_id ,0) : location.reload()
+    }
+    function form(creation_id,ox){//ox->まるばつ(1or0)
+        var form = document.createElement('form');
+        var request1 = document.createElement('input');
+        var request2 = document.createElement('input');
+ 
+        form.method = 'POST';
+        form.action = '/record';
+ 
+        request1.type = 'hidden'; //入力フォームが表示されないように
+        request1.name = 'creation';
+        request1.value = creation_id;
+
+        request2.type = 'hidden'; //入力フォームが表示されないように
+        request2.name = 'ox';
+        request2.value = ox;
+
+        form.appendChild(request1);
+        form.appendChild(request2);
+        document.body.appendChild(form);
+ 
+        form.submit();
+        }
+
+    </SCRIPT>
+
     <p>「<%= quiz_kanji %>」は,なんと読む?</p>
-    <a class="button"><%= answer_reading%></a>
-    <a class="button"><%= wrong_readings[0]%></a>
-    <a class="button"><%= wrong_readings[1]%></a>
-    <a class="button"><%= wrong_readings[2]%></a>
+    <button class="button" value="<%= answer_reading%>" onclick="msgt(this)"> <%= answer_reading%> </button>
+    <button class="button" value="<%= wrong_readings[0]%>" onclick="msgf(this)"> <%= wrong_readings[0]%> </button>
+    <button class="button" value="<%= wrong_readings[1]%>" onclick="msgf(this)"> <%= wrong_readings[1]%> </button>
+    <button class="button" value="<%= wrong_readings[2]%>" onclick="msgf(this)"> <%= wrong_readings[2]%> </button>
 </div>

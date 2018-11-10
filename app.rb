@@ -9,9 +9,11 @@ require_relative 'models/user'
 require_relative 'models/kanji'
 require_relative 'models/reading'
 require_relative 'models/creation'
+require_relative 'models/answer'
 
 class KanjiApp < Sinatra::Base
   register Sinatra::Namespace
+  register Sinatra::Reloader
   enable :sessions
 
   get '/' do
@@ -124,8 +126,18 @@ class KanjiApp < Sinatra::Base
       # 間違った読みを3つ取る
       three_wrong_readings = Reading.where.not(reading: correct_readings).pluck(:reading).sample(3)
       # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
-      [quiz_kanji.kanji, answer_reading, three_wrong_readings]
+      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      [quiz_kanji.kanji, answer_reading, three_wrong_readings, creation]
     end
+  end
+
+  post '/record' do
+    answer = Answer.new(
+      creation_id: params[:creation],
+      correct: params[:ox]
+      )
+      answer.save!
+    redirect '/user/mytest'
   end
 
   get '/management' do
