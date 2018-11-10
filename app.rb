@@ -1,17 +1,17 @@
 # coding:utf-8
-require 'active_record'
-require 'sinatra/base'
-require 'sinatra/reloader'
-require 'sinatra/namespace'
-require 'bcrypt'
-require 'pry'
-require_relative 'models/user'
-require_relative 'models/kanji'
-require_relative 'models/reading'
-require_relative 'models/creation'
+
+# Gemfileのgemをrequireする
+require 'bundler/setup'
+Bundler.require
+# init.rbに書かれているmodelsをrequireする.
+require_relative 'models/init'
 
 class KanjiApp < Sinatra::Base
+  # Sinatra起動中にこのファイルに加えた変更がリアルタイムに反映されるのでとっても楽.
+  register Sinatra::Reloader
+  # いくつかのページへのアクセスでユーザー以外を弾く仕組みに使った.
   register Sinatra::Namespace
+  # sessionというハッシュ(JavaでいうHashMap)を有効化する. これはCookieを表しているのだと思う. ここにユーザーのIDを保存したりする.
   enable :sessions
 
   get '/' do
@@ -19,31 +19,24 @@ class KanjiApp < Sinatra::Base
   end
 
   get '/login' do
-    if current_user
-      redirect '/user/mypage'
-    else
-      erb :login
-    end
+    erb :login
   end
 
   post '/login' do
+    # ログインページから送られてきたメアドとパスワードはparamsハッシュに入っている. これらが正しい組み合わせならこのユーザーをログイン状態とし(すなわちsessionハッシュにuser.idを加えること), マイページへ飛ばす.
     user = User.find_by(email: params[:email])
     if user && user.authenticate(params[:password])
       session.clear
       session[:user_id] = user.id
       redirect '/user/mypage'
     else
-      @error = 'email or password was incorrect'
+      @error = 'メールアドレスとパスワードの組み合わせが正しくありません.'
       erb :login
     end
   end
 
   get '/signup' do
-    if current_user
-      redirect '/user/mypage'
-    else
-      erb :signup
-    end
+    erb :signup
   end
 
   post '/signup' do
@@ -55,8 +48,6 @@ class KanjiApp < Sinatra::Base
         password_confirmation: params[:password_confirmation]
       )
     if user.save
-      # セッションに追加する(ログイン状態になる)
-      session.clear
       session[:user_id] = user.id
       redirect '/user/mypage'
     else
@@ -81,7 +72,7 @@ class KanjiApp < Sinatra::Base
     post '/kanji_register' do
       kanji = Kanji.find_by(kanji: params[:kanji])
       if not kanji
-        # 漢字がテーブルになければエラーメッセージを返す
+        # 漢字がDBになければエラーメッセージを返す
         @error = ['その漢字は登録できません']
       elsif not current_user.kanjis.exists?(id: kanji.id)
         # ドリルに漢字を登録する
@@ -113,18 +104,17 @@ class KanjiApp < Sinatra::Base
       end
     end
 
-    def kanji_quiz_choices()
-      # ユーザークイズはユーザーが保存した漢字から, ゲストクイズならすべての漢字から問題を作る
+    def kanji_quiz()
+      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
       kanjis = current_user ? current_user.kanjis : Kanji.all
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
-      correct_readings = quiz_kanji.readings.pluck(:reading)
       # その漢字の読みを1つランダムに取る
-      answer_reading = correct_readings.sample
+      answer_reading = quiz_kanji.readings.sample
       # 間違った読みを3つ取る
-      three_wrong_readings = Reading.where.not(reading: correct_readings).pluck(:reading).sample(3)
+      three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
       # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
-      [quiz_kanji.kanji, answer_reading, three_wrong_readings]
+      [quiz_kanji.kanji, answer_reading.reading, three_wrong_readings.map {|reading| reading.reading}]
     end
   end
 
@@ -136,6 +126,9 @@ class KanjiApp < Sinatra::Base
     User.destroy(params[:id])
     redirect '/management'
   end
+
+  # Users.all.sampleなどをコンソールで使ってみたいとき, 下の文のコメントを外してbundle exec ruby app.rbする.
+  # binding.pry
 
   run!
 end

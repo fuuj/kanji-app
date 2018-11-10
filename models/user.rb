@@ -1,6 +1,4 @@
 # coding: utf-8
-ActiveRecord::Base.configurations = YAML.load_file('./database.yml')
-ActiveRecord::Base.establish_connection(:development)
 
 class User < ActiveRecord::Base
   has_many :creations, dependent: :destroy
