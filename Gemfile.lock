@@ -56,6 +56,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord (~> 4.2, >= 4.2.10)
   bcrypt
+  concurrent-ruby (= 1.1.3)
   milligram
   pry
   rack-test (= 0.7.0)

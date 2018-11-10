@@ -116,6 +116,24 @@ class KanjiApp < Sinatra::Base
       # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
       [quiz_kanji.kanji, answer_reading.reading, three_wrong_readings.map {|reading| reading.reading}]
     end
+     def reading_quiz()
+      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
+      kanjis = current_user ? current_user.kanjis : Kanji.all
+      # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
+      answer_kanji = kanjis.sample
+      # その漢字の読みを1つランダムに取る
+      quiz_reading = answer_kanji.readings.sample
+      # 間違った漢字を3つ取る
+      three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
+      while(three_wrong_kanjis.any? {|kanji| kanji.reading == quiz_reading})
+       three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
+      end
+      # e.g. ["もく", "木", ["月", "火", "水"]]
+      wrong_kanjis = three_wrong_kanjis.map {|kanji|   
+        kanji.kanji
+      }
+      [quiz_reading, answer_kanji, wrong_kanjis]
+    end
   end
 
   get '/management' do
@@ -127,8 +145,7 @@ class KanjiApp < Sinatra::Base
     redirect '/management'
   end
 
-  # Users.all.sampleなどをコンソールで使ってみたいとき, 下の文のコメントを外してbundle exec ruby app.rbする.
-  # binding.pry
+ 
 
   run!
 end
