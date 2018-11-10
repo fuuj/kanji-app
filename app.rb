@@ -113,10 +113,23 @@ class KanjiApp < Sinatra::Base
       answer_reading = quiz_kanji.readings.sample
       # 間違った読みを3つ取る
       three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
-      # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
-      [quiz_kanji.kanji, answer_reading.reading, three_wrong_readings.map {|reading| reading.reading}]
+      binding.pry
+      # wrong_readingsとanswer_readingを結合。final_answers[3]がanswer_reading
+      final_readings = three_wrong_readings.push(answer_reading)
+      # final_readingsをシャッフルする。final_shuffleを上書きするので、answer_readingはどこにいるかわからない。
+      final_readings.shuffle!
+      # answer_readingの場所を特定する。
+
+      for num in 0..3
+
+        if final_readings[num] == answer_reading then
+          answer_reading_place = num
+        end
+      end
+      [quiz_kanji,final_readings,answer_reading_place]
     end
-     def reading_quiz()
+
+    def reading_quiz()
       # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
       kanjis = current_user ? current_user.kanjis : Kanji.all
       # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
@@ -126,15 +139,26 @@ class KanjiApp < Sinatra::Base
       # 間違った漢字を3つ取る
       three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
       while(three_wrong_kanjis.any? {|kanji| kanji.reading == quiz_reading})
-       three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
+        three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
       end
       # e.g. ["もく", "木", ["月", "火", "水"]]
-      wrong_kanjis = three_wrong_kanjis.map {|kanji|   
-        kanji.kanji
-      }
-      [quiz_reading, answer_kanji, wrong_kanjis]
+      wrong_kanjis = three_wrong_kanjis.map {|kanji|kanji.kanji}
+
+      final_kanjis = wrong_kanjis.map {|item| item.kanji}
+      final_kanjis.push(answer_kanji.kanji)
+      final_kanjis.shuffle!
+
+      for num in 0..3
+        if final_kanjis[num] == answer_kanji.kanji
+          answer_kanji_place = num
+        end
+      end
+      [quiz_reading,final_kanjis,answer_kanji_place]
+      
     end
   end
+      
+  
 
   get '/management' do
     erb :management
@@ -145,8 +169,7 @@ class KanjiApp < Sinatra::Base
     redirect '/management'
   end
 
- 
-
   run!
 end
+
 

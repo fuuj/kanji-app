@@ -1,11 +1,9 @@
-<% #binding.pry %>
 <div class="container">
     <h2>問題</h2>
-    <% quiz_reading, answer_kanji, wrong_kanjis = reading_quiz%>
-<% binding.pry %>
+    <% quiz_reading, final_kanjis, answer_kanji_place = reading_quiz%>
     <p>「<%= quiz_reading.reading %>」は,どの漢字か?</p>
-    <a class="button"><%= answer_kanji.kanji%></a>
-    <a class="button"><%= wrong_kanjis[0].kanji%></a>
-    <a class="button"><%= wrong_kanjis[1].kanji%></a>
-    <a class="button"><%= wrong_kanjis[2].kanji%></a>
+    <a class="button"><%= final_kanjis[0] %></a>
+    <a class="button"><%= final_kanjis[1] %></a>
+    <a class="button"><%= final_kanjis[2] %></a>
+    <a class="button"><%= final_kanjis[3] %></a>
 </div>
