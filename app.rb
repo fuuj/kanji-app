@@ -113,10 +113,24 @@ class KanjiApp < Sinatra::Base
       answer_reading = quiz_kanji.readings.sample
       # 間違った読みを3つ取る
       three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
-      # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
-      [quiz_kanji.kanji, answer_reading.reading, three_wrong_readings.map {|reading| reading.reading}]
+      # wrong_readingsとanswer_readingを結合。final_answers[3]がanswer_reading
+      final_readings = three_wrong_readings.push(answer_reading)
+      # final_readingsをシャッフルする。final_shuffleを上書きするので、answer_readingはどこにいるかわからない。
+      final_readings.shuffle!
+      # answer_readingの場所を特定する。
+
+      for num in 0..3
+
+        if final_readings[num] == answer_reading then
+          answer_place = num
+        end
+      end
+      binding.pry
+      [quiz_kanji,final_readings,answer_place]
     end
   end
+      
+  
 
   get '/management' do
     erb :management
@@ -127,9 +141,8 @@ class KanjiApp < Sinatra::Base
     redirect '/management'
   end
 
-  # Users.all.sampleなどをコンソールで使ってみたいとき, 下の文のコメントを外してbundle exec ruby app.rbする.
-  # binding.pry
 
   run!
 end
+
 

@@ -13,3 +13,4 @@ gem "sqlite3"
 gem "pry"
 gem 'milligram'
 gem 'rack-test', '0.7.0'
+gem 'concurrent-ruby', '1.1.3'
