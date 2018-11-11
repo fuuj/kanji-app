@@ -1,19 +1,17 @@
 # coding:utf-8
-require 'active_record'
-require 'sinatra/base'
-require 'sinatra/reloader'
-require 'sinatra/namespace'
-require 'bcrypt'
-require 'pry'
-require_relative 'models/user'
-require_relative 'models/kanji'
-require_relative 'models/reading'
-require_relative 'models/creation'
-require_relative 'models/answer'
+
+# Gemfileのgemをrequireする
+require 'bundler/setup'
+Bundler.require
+# init.rbに書かれているmodelsをrequireする.
+require_relative 'models/init'
 
 class KanjiApp < Sinatra::Base
-  register Sinatra::Namespace
+  # Sinatra起動中にこのファイルに加えた変更がリアルタイムに反映されるのでとっても楽.
   register Sinatra::Reloader
+  # いくつかのページへのアクセスでユーザー以外を弾く仕組みに使った.
+  register Sinatra::Namespace
+  # sessionというハッシュ(JavaでいうHashMap)を有効化する. これはCookieを表しているのだと思う. ここにユーザーのIDを保存したりする.
   enable :sessions
 
   get '/' do
@@ -21,31 +19,24 @@ class KanjiApp < Sinatra::Base
   end
 
   get '/login' do
-    if current_user
-      redirect '/user/mypage'
-    else
-      erb :login
-    end
+    erb :login
   end
 
   post '/login' do
+    # ログインページから送られてきたメアドとパスワードはparamsハッシュに入っている. これらが正しい組み合わせならこのユーザーをログイン状態とし(すなわちsessionハッシュにuser.idを加えること), マイページへ飛ばす.
     user = User.find_by(email: params[:email])
     if user && user.authenticate(params[:password])
       session.clear
       session[:user_id] = user.id
       redirect '/user/mypage'
     else
-      @error = 'email or password was incorrect'
+      @error = 'メールアドレスとパスワードの組み合わせが正しくありません.'
       erb :login
     end
   end
 
   get '/signup' do
-    if current_user
-      redirect '/user/mypage'
-    else
-      erb :signup
-    end
+    erb :signup
   end
 
   post '/signup' do
@@ -57,8 +48,6 @@ class KanjiApp < Sinatra::Base
         password_confirmation: params[:password_confirmation]
       )
     if user.save
-      # セッションに追加する(ログイン状態になる)
-      session.clear
       session[:user_id] = user.id
       redirect '/user/mypage'
     else
@@ -83,7 +72,7 @@ class KanjiApp < Sinatra::Base
     post '/kanji_register' do
       kanji = Kanji.find_by(kanji: params[:kanji])
       if not kanji
-        # 漢字がテーブルになければエラーメッセージを返す
+        # 漢字がDBになければエラーメッセージを返す
         @error = ['その漢字は登録できません']
       elsif not current_user.kanjis.exists?(id: kanji.id)
         # ドリルに漢字を登録する
@@ -105,32 +94,7 @@ class KanjiApp < Sinatra::Base
       erb :mytest
     end
   end
-
-  helpers do
-    def current_user
-      if session[:user_id]
-        User.find(session[:user_id])
-      else
-        nil
-      end
-    end
-
-    def kanji_quiz_choices()
-      # ユーザークイズはユーザーが保存した漢字から, ゲストクイズならすべての漢字から問題を作る
-      kanjis = current_user ? current_user.kanjis : Kanji.all
-      # kanjisから漢字を1つランダムに取る
-      quiz_kanji = kanjis.sample
-      correct_readings = quiz_kanji.readings.pluck(:reading)
-      # その漢字の読みを1つランダムに取る
-      answer_reading = correct_readings.sample
-      # 間違った読みを3つ取る
-      three_wrong_readings = Reading.where.not(reading: correct_readings).pluck(:reading).sample(3)
-      # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
-      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
-      [quiz_kanji.kanji, answer_reading, three_wrong_readings, creation]
-    end
-  end
-
+  
   post '/record' do
     answer = Answer.new(
       creation_id: params[:creation],
@@ -148,7 +112,74 @@ class KanjiApp < Sinatra::Base
     User.destroy(params[:id])
     redirect '/management'
   end
+  
+
+  helpers do
+    def current_user
+      if session[:user_id]
+        User.find(session[:user_id])
+      else
+        nil
+      end
+    end
+
+    def kanji_quiz()
+      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
+      kanjis = current_user ? current_user.kanjis : Kanji.all
+      # kanjisから漢字を1つランダムに取る
+      quiz_kanji = kanjis.sample
+      # その漢字の読みを1つランダムに取る
+      answer_reading = quiz_kanji.readings.sample
+      # 間違った読みを3つ取る
+      three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
+      # wrong_readingsとanswer_readingを結合。final_answers[3]がanswer_reading
+      final_readings = three_wrong_readings.push(answer_reading)
+      # 文字列の配列にする
+      final_readings = final_readings.map {|item| item.reading}
+      # final_readingsをシャッフルする。final_shuffleを上書きするので、answer_readingはどこにいるかわからない。
+      final_readings.shuffle!
+      # answer_readingの場所を特定する。
+      for num in 0..3
+        if final_readings[num] == answer_reading.reading then
+          answer_reading_place = num
+        end
+      end
+      # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
+      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      # [String, Array<String>, Integer, Creation]
+      [quiz_kanji.kanji, final_readings, answer_reading_place, creation]
+    end
+
+    def reading_quiz()
+      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
+      kanjis = current_user ? current_user.kanjis : Kanji.all
+      # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
+      answer_kanji = kanjis.sample
+      # その漢字の読みを1つランダムに取る
+      quiz_reading = answer_kanji.readings.sample
+      # 間違った漢字を3つ取る
+      three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
+      while(three_wrong_kanjis.any? {|kanji| kanji.reading == quiz_reading})
+        three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
+      end
+      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji}
+      # 正解・不正解4つのKanjiをシャッフルする
+      final_kanjis.push(answer_kanji.kanji)
+      final_kanjis.shuffle!
+      # answer_readingの場所を特定する。
+      for num in 0..3
+        if final_kanjis[num] == answer_kanji.kanji
+          answer_kanji_place = num
+        end
+      end
+      # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
+      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      # [String, Array<String>, Integer, Creation]
+      [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
+    end
+  end # helpers end
 
   run!
-end
+end # Class end
+
 

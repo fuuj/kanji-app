@@ -1,12 +1,20 @@
 <!doctype html>
+
+<%# どの.erbファイルが呼ばれるときも, このファイルのyield文に埋め込まれる形で呼ばれる. なのでheadタグを毎度書かずに済む. %>
+
 <html>
   <head>
+    <%# Milligramに使うもの %>
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
     <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
     <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
     <link rel="stylesheet" href="/main.css">
+
+    <%# フォント %>
     <link href="https://fonts.googleapis.com/earlyaccess/sawarabimincho.css" rel="stylesheet" />
+
     <meta charset="utf-8" />
+
     <title>俺の漢字</title>
   </head>
   <body> <%= yield %> </body>
