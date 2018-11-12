@@ -127,6 +127,7 @@ class KanjiApp < Sinatra::Base
       three_wrong_readings = Reading.where.not(reading: correct_readings).pluck(:reading).sample(3)
       # e.g. ["亜", "ア", ["スウ", "ソ", "たわむ-れる"]]
       creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      # ここでは
       [quiz_kanji.kanji, answer_reading, three_wrong_readings, creation]
     end
   end
