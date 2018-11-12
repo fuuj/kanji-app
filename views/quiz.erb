@@ -1,25 +1,70 @@
 
-<% choices, answer_place, creation = locals.values %>
+<%# ランダムにクイズの種類を決める %>
+<% if rand(2) == 1 %>
+<%     theme, choices, answer_place, creation = kanji_quiz %>
+<%     quiz_msg = "「#{theme}」は, なんと読む?" %>
+<% else %>
+<%     theme, choices, answer_place, creation = reading_quiz %>
+<%     quiz_msg = "「#{theme}」は, どんな漢字か?" %>
+<% end %>
 
-<% # ここで定義したJSの変数は, 下で埋め込んでいる外部スクリプトにとってはグローバル変数になる. %>
+<div id="quiz" class="container">
+    <h2>問題</h2>
+    <p><%= quiz_msg %></p>
+    <div id="choices" ></div>
+</div>
+
 <script>
-    var creation_id = '<%= creation ? creation.id : "" %>'; // String
-    var answer = '<%= choices[answer_place] %>'; // String
+// 回答をコントローラーへ送信し, ページをリロードする
+var creation_id = '<%= creation ? creation.id : "" %>'; // String
+var answer = '<%= choices[answer_place] %>'; // String
+
+function msgt(event) {
+    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '\n' + '正解です！';
+    alert(result);
+    (creation_id !== '') ? form(creation_id, 1) : location.reload();
+}
+
+function msgf(event) {
+    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '不正解です！' + '\n' + '正解は' + answer;
+    alert(result);
+    (creation_id !== '') ? form(creation_id ,0) : location.reload();
+}
+
+function form(creation_id, ox) { //ox->まるばつ(1or0)
+    var form = document.createElement('form');
+    var request1 = document.createElement('input');
+    var request2 = document.createElement('input');
+
+    form.method = 'POST';
+    form.action = '/user/record';
+
+    request1.type = 'hidden'; //入力フォームが表示されないように
+    request1.name = 'creation';
+    request1.value = creation_id;
+
+    request2.type = 'hidden'; //入力フォームが表示されないように
+    request2.name = 'ox';
+    request2.value = ox;
+
+    form.appendChild(request1);
+    form.appendChild(request2);
+    document.body.appendChild(form);
+
+    form.submit();
+}
 </script>
 
-<% # recordアクションで回答結果をコントローラーに送信するスクリプト %>
-<script src="/record.js"> </script>
-
-<% # 選択肢を作って表示する %>
 <script>
-    var answer_place = <%= answer_place %>; // Integer
-    var stringChoices = <%= p choices %>; // Array<String>
-    var choices = document.getElementById('choices');
-    for (var n=0; n<4; n++) {
-        var button = document.createElement('button');
-        button.className = 'button';
-        button.innerText = stringChoices[n];
-        button.onclick = n == answer_place ? msgt : msgf;
-        choices.appendChild(button);
-    }
+// 選択肢を作って表示する
+var answer_place = <%= answer_place %>; // Integer
+var stringChoices = <%= p choices %>; // Array<String>
+var choices = document.getElementById('choices');
+for (var n=0; n<4; n++) {
+    var button = document.createElement('button');
+    button.className = 'button';
+    button.innerText = stringChoices[n];
+    button.onclick = n == answer_place ? msgt : msgf;
+    choices.appendChild(button);
+}
 </script>
