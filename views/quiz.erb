@@ -14,8 +14,9 @@
     <div id="choices" ></div>
 </div>
 
+<% #回答をコントローラーへ送信し, ページをリロードする%>
 <script>
-// 回答をコントローラーへ送信し, ページをリロードする
+
 var creation_id = '<%= creation ? creation.id : "" %>'; // String
 var answer = '<%= choices[answer_place] %>'; // String
 
@@ -55,10 +56,10 @@ function form(creation_id, ox) { //ox->まるばつ(1or0)
 }
 </script>
 
+<% # 選択肢を作って表示する %>
 <script>
-// 選択肢を作って表示する
 var answer_place = <%= answer_place %>; // Integer
-var stringChoices = <%= p choices %>; // Array<String>
+var stringChoices = <%= choices %>; // Array<String>
 var choices = document.getElementById('choices');
 for (var n=0; n<4; n++) {
     var button = document.createElement('button');

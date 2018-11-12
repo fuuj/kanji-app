@@ -110,7 +110,6 @@ class KanjiApp < Sinatra::Base
         )
         answer.save!
       redirect '/user/mytest'
-      # redirect '/mytest'
     end
   end # namespace end
 
