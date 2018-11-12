@@ -1,9 +1,25 @@
-<div class="container">
-    <h2>問題</h2>
-    <% quiz_kanji, final_readings,answer_place = kanji_quiz %>
-    <p>「<%= quiz_kanji.kanji %>」は,なんと読む?</p>
-    <a class="button"><%= final_readings[0].reading %></a>
-    <a class="button"><%= final_readings[1].reading %></a>
-    <a class="button"><%= final_readings[2].reading %></a>
-    <a class="button"><%= final_readings[3].reading %></a>
-</div>
+
+<% choices, answer_place, creation = locals.values %>
+
+<% # ここで定義したJSの変数は, 下で埋め込んでいる外部スクリプトにとってはグローバル変数になる. %>
+<script>
+    var creation_id = '<%= creation ? creation.id : "" %>'; // String
+    var answer = '<%= choices[answer_place] %>'; // String
+</script>
+
+<% # recordアクションで回答結果をコントローラーに送信するスクリプト %>
+<script src="/record.js"> </script>
+
+<% # 選択肢を作って表示する %>
+<script>
+    var answer_place = <%= answer_place %>; // Integer
+    var stringChoices = <%= p choices %>; // Array<String>
+    var choices = document.getElementById('choices');
+    for (var n=0; n<4; n++) {
+        var button = document.createElement('button');
+        button.className = 'button';
+        button.innerText = stringChoices[n];
+        button.onclick = n == answer_place ? msgt : msgf;
+        choices.appendChild(button);
+    }
+</script>

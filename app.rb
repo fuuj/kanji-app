@@ -95,6 +95,24 @@ class KanjiApp < Sinatra::Base
     end
   end
 
+  post '/record' do
+    answer = Answer.new(
+      creation_id: params[:creation],
+      correct: params[:ox]
+      )
+      answer.save!
+    redirect '/user/mytest'
+  end
+
+  get '/management' do
+    erb :management
+  end
+
+  delete '/management/delUser' do
+    User.destroy(params[:id])
+    redirect '/management'
+  end
+
   helpers do
     def current_user
       if session[:user_id]
@@ -113,20 +131,22 @@ class KanjiApp < Sinatra::Base
       answer_reading = quiz_kanji.readings.sample
       # 間違った読みを3つ取る
       three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
-      binding.pry
       # wrong_readingsとanswer_readingを結合。final_answers[3]がanswer_reading
       final_readings = three_wrong_readings.push(answer_reading)
+      # 文字列の配列にする
+      final_readings = final_readings.map {|item| item.reading}
       # final_readingsをシャッフルする。final_shuffleを上書きするので、answer_readingはどこにいるかわからない。
       final_readings.shuffle!
       # answer_readingの場所を特定する。
-
       for num in 0..3
-
-        if final_readings[num] == answer_reading then
+        if final_readings[num] == answer_reading.reading then
           answer_reading_place = num
         end
       end
-      [quiz_kanji,final_readings,answer_reading_place]
+      # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
+      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      # [String, Array<String>, Integer, Creation]
+      [quiz_kanji.kanji, final_readings, answer_reading_place, creation]
     end
 
     def reading_quiz()
@@ -141,35 +161,24 @@ class KanjiApp < Sinatra::Base
       while(three_wrong_kanjis.any? {|kanji| kanji.reading == quiz_reading})
         three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
       end
-      # e.g. ["もく", "木", ["月", "火", "水"]]
-      wrong_kanjis = three_wrong_kanjis.map {|kanji|kanji.kanji}
-
-      final_kanjis = wrong_kanjis.map {|item| item.kanji}
-      final_kanjis.push(answer_kanji.kanji)
+      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji.kanji }
+      # 正解・不正解4つのKanjiをシャッフルする
+      final_kanjis = wrong_kanjis.push(answer_kanji.kanji)
       final_kanjis.shuffle!
-
+      # answer_readingの場所を特定する。
       for num in 0..3
         if final_kanjis[num] == answer_kanji.kanji
           answer_kanji_place = num
         end
       end
-      [quiz_reading,final_kanjis,answer_kanji_place]
-      
+      # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
+      creation = current_user ? current_user.creations.where(kanji_id:answer_kanji.id).first : nil
+      # [String, Array<String>, Integer, Creation]
+      [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
     end
-  end
-      
-  
-
-  get '/management' do
-    erb :management
-  end
-
-  delete '/management/delUser' do
-    User.destroy(params[:id])
-    redirect '/management'
-  end
+  end # helpers end
 
   run!
-end
+end # Class end
 
 

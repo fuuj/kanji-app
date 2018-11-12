@@ -1,6 +1,7 @@
 /vendor
 /.DS_Store
 /kanjiApp.db
+/.idea
 /main.css
 /localApps
 /.bundle

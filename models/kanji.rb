@@ -1,4 +1,5 @@
 class Kanji < ActiveRecord::Base
+  # (id, kanji)
   has_many :readings
-  has_many :users, through: :creations
+  has_many :creations
 end
