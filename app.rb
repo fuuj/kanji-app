@@ -161,7 +161,7 @@ class KanjiApp < Sinatra::Base
       while(three_wrong_kanjis.any? {|kanji| kanji.reading == quiz_reading})
         three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
       end
-      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji}
+      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji.kanji }
       # 正解・不正解4つのKanjiをシャッフルする
       final_kanjis = wrong_kanjis.push(answer_kanji.kanji)
       final_kanjis.shuffle!
@@ -172,7 +172,7 @@ class KanjiApp < Sinatra::Base
         end
       end
       # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
-      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      creation = current_user ? current_user.creations.where(kanji_id:answer_kanji.id).first : nil
       # [String, Array<String>, Integer, Creation]
       [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
     end
