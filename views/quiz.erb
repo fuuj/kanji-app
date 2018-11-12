@@ -1,49 +1,25 @@
-<div class="container">
-    <h2>問題</h2>
-    <% #quiz_kanji, answer_reading, wrong_readings, creation = kanji_quiz_choices%>
-    <% quiz_kanji, final_readings, answer_reading_place, creation = kanji_quiz_choices %>
 
-    <SCRIPT language="JavaScript">
-     function msgt(button) {
-        var result = 'あなたが選んだのは,' + '[' +button.value + ']' + '\n' + '正解です！';
-        alert(result);
-        var creation_id = '<%= creation ? creation.id : "" %>';
-        (creation_id !== '') ? form(creation_id, 1) : location.reload()
+<% choices, answer_place, creation = locals.values %>
+
+<% # ここで定義したJSの変数は, 下で埋め込んでいる外部スクリプトにとってはグローバル変数になる. %>
+<script>
+    var creation_id = '<%= creation ? creation.id : "" %>'; // String
+    var answer = '<%= choices[answer_place] %>'; // String
+</script>
+
+<% # recordアクションで回答結果をコントローラーに送信するスクリプト %>
+<script src="/record.js"> </script>
+
+<% # 選択肢を作って表示する %>
+<script>
+    var answer_place = <%= answer_place %>; // Integer
+    var stringChoices = <%= p choices %>; // Array<String>
+    var choices = document.getElementById('choices');
+    for (var n=0; n<4; n++) {
+        var button = document.createElement('button');
+        button.className = 'button';
+        button.innerText = stringChoices[n];
+        button.onclick = n == answer_place ? msgt : msgf;
+        choices.appendChild(button);
     }
-    function msgf(button) {
-        var result = 'あなたが選んだのは,' + '[' +button.value + ']' + '不正解です！' + '\n' + '正解は' + '<%= final_readings[answer_reading_place] %>';
-        alert(result);
-        var creation_id = '<%= creation ? creation.id : "" %>';
-        (creation_id !== '') ? form(creation_id ,0) : location.reload()
-    }
-    function form(creation_id, ox) { //ox->まるばつ(1or0)
-        var form = document.createElement('form');
-        var request1 = document.createElement('input');
-        var request2 = document.createElement('input');
- 
-        form.method = 'POST';
-        form.action = '/record';
- 
-        request1.type = 'hidden'; //入力フォームが表示されないように
-        request1.name = 'creation';
-        request1.value = creation_id;
-
-        request2.type = 'hidden'; //入力フォームが表示されないように
-        request2.name = 'ox';
-        request2.value = ox;
-
-        form.appendChild(request1);
-        form.appendChild(request2);
-        document.body.appendChild(form);
- 
-        form.submit();
-    }
-    </SCRIPT>
-
-    <p>「<%= quiz_kanji %>」は,なんと読む?</p>
-    <button class="button" value="<%= final_readings[0]%>" onclick="msgf(this)"> <%= final_readings[0]%> </button>
-    <button class="button" value="<%= final_readings[1]%>" onclick="msgf(this)"> <%= final_readings[1]%> </button>
-    <button class="button" value="<%= final_readings[2]%>" onclick="msgf(this)"> <%= final_readings[2]%> </button>
-    <button class="button" value="<%= final_readings[3]%>" onclick="msgf(this)"> <%= final_readings[3]%> </button>
-
-</div>
+</script>

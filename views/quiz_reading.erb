@@ -1,9 +1,10 @@
-<div class="container">
+
+<% theme, choices, answer_place, creation = reading_quiz %>
+
+<div id="quiz" class="container">
     <h2>問題</h2>
-    <% quiz_reading, final_kanjis, answer_kanji_place = reading_quiz%>
-    <p>「<%= quiz_reading.reading %>」は,どの漢字か?</p>
-    <a class="button"><%= final_kanjis[0] %></a>
-    <a class="button"><%= final_kanjis[1] %></a>
-    <a class="button"><%= final_kanjis[2] %></a>
-    <a class="button"><%= final_kanjis[3] %></a>
+    <p>「<%= theme %>」は, どんな漢字か?</p>
+    <div id="choices" ></div>
 </div>
+
+<%= erb :quiz, :locals => { choices: choices, answer_place: answer_place, creation: creation } %>

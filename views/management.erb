@@ -1,5 +1,23 @@
 
 <div class="container">
+    <h3>Recent Answers</h3>
+    <table>
+        <tr>
+            <th>id</th>
+            <th>creation_id</th>
+            <th>correct</th>
+        </tr>
+        <% Answer.all.last(8).reverse.each do |answer| %>
+            <tr>
+                <td><%= answer.id %></td>
+                <td><%= answer.creation_id %></td>
+                <td><%= answer.correct %></td>
+            </tr>
+        <% end %>
+    </table>
+</div>
+
+<div class="container">
 <h3>All users</h3>
 <table>
   <thead>
@@ -28,13 +46,18 @@
 
 <div class="container">
     <h3>Kanjis</h3>
-    <div class="row">
-      <% Kanji.all.first(50).each do |kanji| %>
-        <div class="column">
-            <span><%= kanji.kanji%></span>
-        </div>
-      <% end %>
-    </div>
+    <table>
+        <tr>
+            <th>id</th>
+            <th>kanji</th>
+        </tr>
+        <% (Kanji.all.first(4) + Kanji.all.last(4)).each do |kanji| %>
+            <tr>
+                <td><%= kanji.id %></td>
+                <td><%= kanji.kanji %></td>
+            </tr>
+        <% end %>
+    </table>
 </div>
 
 <div class="container">
@@ -45,14 +68,7 @@
         <th>kanji_id</th>
         <th>reading</th>
       </tr>
-      <% Reading.all.first(5).each do |reading| %>
-      <tr>
-        <td><%= reading.id %></td>
-        <td><%= reading.kanji_id %></td>
-        <td><%= reading.reading %></td>
-      </tr>
-      <% end %>
-      <% Reading.all.last(5).each do |reading| %>
+      <% (Reading.all.first(4) + Reading.all.last(4)).each do |reading| %>
       <tr>
         <td><%= reading.id %></td>
         <td><%= reading.kanji_id %></td>
@@ -70,7 +86,7 @@
     <th>user_id</th>
     <th>kanji_id</th>
   </tr>
-  <% Creation.all.last(10).each do |creation| %>
+  <% Creation.all.last(8).reverse.each do |creation| %>
   <tr>
     <td><%= creation.id %></td>
     <td><%= creation.user_id %></td>

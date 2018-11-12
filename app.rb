@@ -94,7 +94,7 @@ class KanjiApp < Sinatra::Base
       erb :mytest
     end
   end
-  
+
   post '/record' do
     answer = Answer.new(
       creation_id: params[:creation],
@@ -112,7 +112,6 @@ class KanjiApp < Sinatra::Base
     User.destroy(params[:id])
     redirect '/management'
   end
-  
 
   helpers do
     def current_user
@@ -164,7 +163,7 @@ class KanjiApp < Sinatra::Base
       end
       wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji}
       # 正解・不正解4つのKanjiをシャッフルする
-      final_kanjis.push(answer_kanji.kanji)
+      final_kanjis = wrong_kanjis.push(answer_kanji.kanji)
       final_kanjis.shuffle!
       # answer_readingの場所を特定する。
       for num in 0..3
