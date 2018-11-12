@@ -61,6 +61,15 @@ class KanjiApp < Sinatra::Base
     redirect '/'
   end
 
+  get '/management' do
+    erb :management
+  end
+
+  delete '/management/delUser' do
+    User.destroy(params[:id])
+    redirect '/management'
+  end
+
   namespace '/user' do
     # このnamespace内のアクションはユーザー様以外お断り
     before { redirect '/' unless current_user }
@@ -93,25 +102,17 @@ class KanjiApp < Sinatra::Base
     get '/mytest' do
       erb :mytest
     end
-  end
 
-  post '/record' do
-    answer = Answer.new(
-      creation_id: params[:creation],
-      correct: params[:ox]
-      )
-      answer.save!
-    redirect '/user/mytest'
-  end
+    post '/record' do
+      answer = Answer.new(
+        creation_id: params[:creation],
+        correct: params[:ox]
+        )
+        answer.save!
+      redirect '/user/mytest'
+    end
+  end # namespace end
 
-  get '/management' do
-    erb :management
-  end
-
-  delete '/management/delUser' do
-    User.destroy(params[:id])
-    redirect '/management'
-  end
 
   helpers do
     def current_user
