@@ -20,6 +20,13 @@
 var creation_id = '<%= creation ? creation.id : "" %>'; // String
 var answer = '<%= choices[answer_place] %>'; // String
 
+    
+    //msgt(正解ver),msgf(不正解ver)は選択肢をクリックされた時に使われる関数
+    //引き数はともにボタンの値(選択肢の文字列)
+    //動作：
+    //1:正解、不正解を伝える
+    //2-1:creationあれば、ユーザーを識別できるものと正解・不正解を表すもの(1と0)を引数にform関数へ
+    //2-2:なければ、ページリロード(次の問題へ)
 function msgt(event) {
     var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '\n' + '正解です！';
     alert(result);
@@ -32,6 +39,10 @@ function msgf(event) {
     (creation_id !== '') ? form(creation_id ,0) : location.reload();
 }
 
+    //app.rbの/recordへ値を送る関数form
+    //引き数はcreationとox(1or0)
+    //動作:
+        //送りたい値(request1,request2)をセットし、送る
 function form(creation_id, ox) { //ox->まるばつ(1or0)
     var form = document.createElement('form');
     var request1 = document.createElement('input');
