@@ -11,11 +11,16 @@
     <link rel="stylesheet" href="/main.css">
 
     <%# フォント %>
-    <link href="https://fonts.googleapis.com/earlyaccess/sawarabimincho.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/sawarabimincho.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
 
     <meta charset="utf-8" />
 
     <title>俺の漢字</title>
   </head>
-  <body> <%= yield %> </body>
+  <body>
+      <div class="container">
+      <%= yield %>
+      </div>
+  </body>
 </html>

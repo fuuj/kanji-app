@@ -1,11 +1,25 @@
-
+body {
+    font-family: "Sawarabi Mincho";
+}
+h1 {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 10rem;
+}
 .container {
-    padding: 4rem 0;
+    padding: 6rem 3rem;
     margin: 0 auto;
     max-width: 80rem;
     text-align: center;
 }
-
-/* .wf-sawarabimincho { font-family: "Sawarabi Mincho"; } */
-body { font-family: "Sawarabi Mincho"; }
+.button, input[type="submit"] {
+    background-color: crimson;
+    border-color: crimson;
+    color: white;
+    font-size: 3rem;
+    font-weight: unset;
+    padding: 2rem 4rem;
+    margin: 0.5rem;
+    border-radius: 10rem;
+    height: auto;
+}
 
