@@ -11,15 +11,25 @@ h1 {
     max-width: 80rem;
     text-align: center;
 }
-.button, input[type="submit"] {
+.button, .small-button, input[type="submit"] {
     background-color: crimson;
     border-color: crimson;
     color: white;
-    font-size: 3rem;
     font-weight: unset;
-    padding: 2rem 4rem;
-    margin: 0.5rem;
     border-radius: 10rem;
     height: auto;
+    margin: 1.5rem 0.5rem;
+}
+.button {
+    font-size: 3rem;
+    padding: 2rem 4rem;
+}
+.small-button, input[type="submit"] {
+    font-size: 2rem;
+    padding: 1rem 3rem;
+}
+.kanji-button {
+    font-size: 3rem;
+    padding: 1rem 1.5rem;
 }
 
