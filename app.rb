@@ -61,6 +61,10 @@ class KanjiApp < Sinatra::Base
     redirect '/'
   end
 
+  get '/quiz' do
+    erb :quiz, layout: nil
+  end
+
   get '/management' do
     erb :management
   end
@@ -105,11 +109,11 @@ class KanjiApp < Sinatra::Base
 
     post '/record' do
       answer = Answer.new(
-        creation_id: params[:creation],
+        creation_id: params[:creation_id],
         correct: params[:ox]
         )
-        answer.save!
-      redirect '/user/mytest'
+      answer.save!
+      redirect '/quiz'
     end
   end # namespace end
 

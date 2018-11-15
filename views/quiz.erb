@@ -1,71 +1,67 @@
 
-<%# ランダムにクイズの種類を決める %>
-<% if rand(2) == 1 %>
-<%     theme, choices, answer_place, creation = kanji_quiz %>
-<%     quiz_msg = "「#{theme}」は, なんと読む?" %>
-<% else %>
-<%     theme, choices, answer_place, creation = reading_quiz %>
-<%     quiz_msg = "「#{theme}」は, どんな漢字か?" %>
-<% end %>
-
 <div id="quiz" class="container">
+    <%# ランダムにクイズの種類を決める %>
+    <% if rand(2) == 1 %>
+        <%     theme, choices, answer_place, creation = kanji_quiz %>
+        <%     quiz_msg = "「#{theme}」は, なんと読む?" %>
+    <% else %>
+        <%     theme, choices, answer_place, creation = reading_quiz %>
+        <%     quiz_msg = "「#{theme}」は, どんな漢字か?" %>
+    <% end %>
+
     <h2>問題</h2>
     <p><%= quiz_msg %></p>
     <div id="choices" ></div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <% #回答をコントローラーへ送信し, ページをリロードする%>
+    <script>
+    var creation_id = '<%= creation ? creation.id : "" %>'; // String
+    var answer = '<%= choices[answer_place] %>'; // String
+
+    function msgt(event) {
+        var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '\n' + '正解です！';
+        alert(result);
+        form(creation_id, 1);
+    }
+
+    function msgf(event) {
+        var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '不正解です！' + '\n' + '正解は' + answer;
+        alert(result);
+        form(creation_id, 0);
+    }
+
+    function form(creation_id, ox) { //ox->まるばつ(1or0)
+        // ページをリロードせずにクイズだけ入れ替える. このためのajaxという通信方法が殆どのブラウザで使える.
+        // JavaScriptだけでも書けるけど, jqueryというライブラリを使うとよりスマートに書ける.
+        // もしユーザークイズならrecordアクションを引数付きで, ゲストならただのquizアクションをリクエスト:
+        var ajaxHash = creation_id !== '' ? {
+            type: 'POST',
+            url: '/user/record',
+            data: { creation_id: creation_id, ox: ox }
+        } : {
+            type: 'GET',
+            url: '/quiz'
+        };
+        // ajaxリクエストが成功したらquizを入れ替える:
+        $.ajax(ajaxHash).done((newQuiz) => {
+            $('#quiz').replaceWith(newQuiz);
+        });
+    };
+    </script>
+
+    <% # 選択肢を作って表示する %>
+    <script>
+    var answer_place = <%= answer_place %>; // Integer
+    var stringChoices = <%= choices %>; // Array<String>
+    var choices = document.getElementById('choices');
+    for (var n=0; n<4; n++) {
+        var button = document.createElement('button');
+        button.className = 'button';
+        button.innerText = stringChoices[n];
+        button.onclick = n == answer_place ? msgt : msgf;
+        choices.appendChild(button);
+    }
+    </script>
 </div>
 
-<% #回答をコントローラーへ送信し, ページをリロードする%>
-<script>
-
-var creation_id = '<%= creation ? creation.id : "" %>'; // String
-var answer = '<%= choices[answer_place] %>'; // String
-
-function msgt(event) {
-    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '\n' + '正解です！';
-    alert(result);
-    (creation_id !== '') ? form(creation_id, 1) : location.reload();
-}
-
-function msgf(event) {
-    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '不正解です！' + '\n' + '正解は' + answer;
-    alert(result);
-    (creation_id !== '') ? form(creation_id ,0) : location.reload();
-}
-
-function form(creation_id, ox) { //ox->まるばつ(1or0)
-    var form = document.createElement('form');
-    var request1 = document.createElement('input');
-    var request2 = document.createElement('input');
-
-    form.method = 'POST';
-    form.action = '/user/record';
-
-    request1.type = 'hidden'; //入力フォームが表示されないように
-    request1.name = 'creation';
-    request1.value = creation_id;
-
-    request2.type = 'hidden'; //入力フォームが表示されないように
-    request2.name = 'ox';
-    request2.value = ox;
-
-    form.appendChild(request1);
-    form.appendChild(request2);
-    document.body.appendChild(form);
-
-    form.submit();
-}
-</script>
-
-<% # 選択肢を作って表示する %>
-<script>
-var answer_place = <%= answer_place %>; // Integer
-var stringChoices = <%= choices %>; // Array<String>
-var choices = document.getElementById('choices');
-for (var n=0; n<4; n++) {
-    var button = document.createElement('button');
-    button.className = 'button';
-    button.innerText = stringChoices[n];
-    button.onclick = n == answer_place ? msgt : msgf;
-    choices.appendChild(button);
-}
-</script>
