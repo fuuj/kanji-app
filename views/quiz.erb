@@ -9,14 +9,15 @@
 <% end %>
 
 <div id="quiz" class="container">
-    <h2>問題</h2>
-    <p><%= quiz_msg %></p>
+    <div id="quiz-theme" >
+        <h2>問題</h2>
+        <h3><%= quiz_msg %></h3>
+    </div>
     <div id="choices" ></div>
 </div>
 
 <% #回答をコントローラーへ送信し, ページをリロードする%>
 <script>
-
 var creation_id = '<%= creation ? creation.id : "" %>'; // String
 var answer = '<%= choices[answer_place] %>'; // String
 
@@ -79,8 +80,8 @@ var answer_place = <%= answer_place %>; // Integer
 var stringChoices = <%= choices %>; // Array<String>
 var choices = document.getElementById('choices');
 for (var n=0; n<4; n++) {
-    var button = document.createElement('button');
-    button.className = 'button';
+    var button = document.createElement('a');
+    button.className = 'button choice';
     button.innerText = stringChoices[n];
     button.onclick = n == answer_place ? msgt : msgf;
     choices.appendChild(button);
