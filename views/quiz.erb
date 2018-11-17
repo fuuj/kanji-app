@@ -20,6 +20,7 @@
 var creation_id = '<%= creation ? creation.id : "" %>'; // String
 var answer = '<%= choices[answer_place] %>'; // String
 
+
     
     //msgt(正解ver),msgf(不正解ver)は選択肢をクリックされた時に使われる関数
     //引き数はともにボタンの値(選択肢の文字列)
@@ -28,15 +29,20 @@ var answer = '<%= choices[answer_place] %>'; // String
     //2-1:creationあれば、ユーザーを識別できるものと正解・不正解を表すもの(1と0)を引数にform関数へ
     //2-2:なければ、ページリロード(次の問題へ)
 function msgt(event) {
-    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '\n' + '正解です！';
+    var kanji_accuracy = '<%=creation ? kanji_accuracy(creation,1) : "" %>'; //String
+    var user_accuracy = '<%=creation ? user_accuracy(creation,1) : "" %>'; //String
+    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '\n' + '正解です！' + 'あなたの正答率は,'+'[' + user_accuracy + ']' + '\n' + 'です！' + 'ちなみにこの漢字の正答率は,' + '[' + kanji_accuracy + ']' + '\n' + 'です!';
     alert(result);
-    (creation_id !== '') ? form(creation_id, 1) : location.reload();
+    (creation_id !== '') ? form(creation_id, 1) : location.reload(); 
 }
 
 function msgf(event) {
-    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '不正解です！' + '\n' + '正解は' + answer;
-    alert(result);
-    (creation_id !== '') ? form(creation_id ,0) : location.reload();
+    var kanji_accuracy = '<%=creation ? kanji_accuracy(creation,0) : "" %>'; //String
+    var user_accuracy = '<%=creation ? user_accuracy(creation,0) : "" %>'; //String
+    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '不正解です！' + '\n' + '正解は' + answer + 'です。' + 'あなたの正答率は,'+'[' + user_accuracy + ']' + '\n' + 'です！' + 'ちなみにこの漢字の正答率は,' + '[' + kanji_accuracy + ']' + '\n' + 'です!';
+     alert(result);    
+     (creation_id !== '') ? form(creation_id ,0) : location.reload();
+    
 }
 
     //app.rbの/recordへ値を送る関数form

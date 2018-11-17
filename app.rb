@@ -124,8 +124,13 @@ class KanjiApp < Sinatra::Base
     end
 
     def kanji_quiz()
-      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      kanjis = current_user ? current_user.kanjis : Kanji.all
+      if(current_user == nil)
+        has_kanjis = false
+      else
+        has_kanjis = current_user.kanjis.length>0
+      end
+      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.     
+      kanjis = has_kanjis ? current_user.kanjis : Kanji.all
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
@@ -151,8 +156,13 @@ class KanjiApp < Sinatra::Base
     end
 
     def reading_quiz()
+      if(current_user == nil)
+        has_kanjis = false
+      else
+        has_kanjis = current_user.kanjis.length>0
+      end
       # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      kanjis = current_user ? current_user.kanjis : Kanji.all
+      kanjis = has_kanjis ? current_user.kanjis : Kanji.all
       # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
       answer_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
@@ -177,6 +187,36 @@ class KanjiApp < Sinatra::Base
       # [String, Array<String>, Integer, Creation]
       [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
     end
+	
+
+    def accuracy(accuracy_correct,ox)
+      #accuracy_correct = creation.answers.pluck(:correct)
+      count = accuracy_correct.sum
+      #みらいよち(byきっつー)
+      count = count + ox
+      #０から１の範囲で正解率を返す(除算結果をfloatにするためにto_fで明示的に処理)
+      if accuracy_correct.length.to_f == 0 then
+        accuracy_final = 0
+      else
+        accuracy_final = count.to_f/(accuracy_correct.length+1).to_f
+      end
+      #小数点以下第2位までにする
+      accuracy_final = accuracy_final.round(2)
+      accuracy_final
+    end
+
+    def kanji_accuracy(creation,ox)
+      accuracy_correct = creation.answers.pluck(:correct)
+      accuracy(accuracy_correct,ox)
+    end
+
+
+    def user_accuracy(creation,ox)
+      accuracy_correct = current_user.answers.pluck(:correct)
+      accuracy(accuracy_correct,ox)
+    end
+
+
   end # helpers end
 
   run!
