@@ -92,7 +92,21 @@ class KanjiApp < Sinatra::Base
           @error = creation.errors.full_messages
         end
       end
-      redirect '/mypage'
+      redirect '/user/mypage'
+    end
+
+   post '/kanji_deleter' do
+     kanji = current_user.kanjis.find_by(kanji: params[:kanji])
+      if not kanji
+        # 漢字がmydrillになければエラーメッセージを返す
+        @error = ['その漢字はドリルにありません']
+      elsif not 
+        # ドリルに漢字を削除する
+        current_user.kanjis.destroy(kanji)
+          @message= '「' + kanji.kanji + '」を削除しました.'
+
+      end
+      redirect '/user/mydrill'
     end
 
     get '/mydrill' do

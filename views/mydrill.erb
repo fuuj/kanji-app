@@ -1,5 +1,18 @@
+<div class="container">
 
-<h3>あなたの漢字ドリル</h3>
-<% current_user.kanjis.each do |kanji| %>
+ <h3>あなたの漢字ドリル</h3>
+ <% current_user.kanjis.each do |kanji| %>
     <span><%= kanji.kanji%></span>
-<% end %>
+ <% end %>
+
+ </div>
+
+<div class="container">
+    <p id="message"><%= @message %></p>
+    <form action="/user/kanji_deleter" method="POST">
+        <input name="kanji">
+        <input type="submit" value="削除">
+    </form>
+</div>
+
+
