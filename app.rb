@@ -79,17 +79,21 @@ class KanjiApp < Sinatra::Base
     end
 
     post '/kanji_register' do
-      kanji = Kanji.find_by(kanji: params[:kanji])
-      if not kanji
-        # 漢字がDBになければエラーメッセージを返す
-        @error = ['その漢字は登録できません']
-      elsif not current_user.kanjis.exists?(id: kanji.id)
-        # ドリルに漢字を登録する
-        creation = current_user.creations.create(kanji_id: kanji.id)
-        if creation.save
-          @message= '「' + kanji.kanji + '」を登録しました.'
-        else
-          @error = creation.errors.full_messages
+      params[:kanji].each_char do |c|
+        if c =~ /\p{Han}/
+          kanji = Kanji.find_by(kanji: c)
+          if not kanji
+          # 漢字がDBになければエラーメッセージを返す
+          @error = ['その漢字は登録できません']
+          elsif not current_user.kanjis.exists?(id: kanji.id)
+          # ドリルに漢字を登録する
+          creation = current_user.creations.create(kanji_id: kanji.id)
+        end
+          if creation.save
+            @message= '「' + kanji.kanji + '」を登録しました.'
+          else
+            @error = creation.errors.full_messages
+          end
         end
       end
       redirect '/user/mypage'
