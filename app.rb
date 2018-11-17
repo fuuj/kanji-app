@@ -187,10 +187,8 @@ class KanjiApp < Sinatra::Base
       # [String, Array<String>, Integer, Creation]
       [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
     end
-	
 
-    def accuracy(accuracy_correct,ox)
-      #accuracy_correct = creation.answers.pluck(:correct)
+    def _accuracy(accuracy_correct,ox)
       count = accuracy_correct.sum
       #みらいよち(byきっつー)
       count = count + ox
@@ -207,15 +205,25 @@ class KanjiApp < Sinatra::Base
 
     def kanji_accuracy(creation,ox)
       accuracy_correct = creation.answers.pluck(:correct)
-      accuracy(accuracy_correct,ox)
+      _accuracy(accuracy_correct,ox)
     end
-
 
     def user_accuracy(creation,ox)
       accuracy_correct = current_user.answers.pluck(:correct)
-      accuracy(accuracy_correct,ox)
+      _accuracy(accuracy_correct,ox)
     end
 
+    def accuracy(creation)
+      accuracy_correct = creation.answers.pluck(:correct)
+      count = accuracy_correct.sum
+      if accuracy_correct.length.to_f == 0 then
+        accuracy_final = 0
+      else
+        accuracy_final = count.to_f/(accuracy_correct.length).to_f
+      end
+      accuracy_final = accuracy_final.round(2)
+      accuracy_final
+    end
 
   end # helpers end
 
