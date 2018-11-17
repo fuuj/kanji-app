@@ -1,15 +1,18 @@
+
 <div class="container">
     <h2>マイページ</h2>
+<br>
     <% if @error %>
         <% @error.each do |s| %>
             <p class="error"><%= s %></p>
         <% end %>
     <% end %>
-    <p>ようこそ, <%= current_user.name %> さん.</p>
-    <a class="button " href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
+    <p><h2>ようこそ, <%= current_user.name %> さん.</h2></p>
+  
 </div>
-
 <div class="container">
+
+<h4>追加したい漢字を入力してください</h4>
     <p id="message"><%= @message %></p>
     <form action="/user/kanji_register" method="POST">
         <input name="kanji">
@@ -17,4 +20,6 @@
     </form>
     <a class="button" href="/user/mytest">テストを受ける</a>
     <a class="button" href="/user/mydrill">ドリルを見る</a>
+<br><br><br><br><br><br>
+<a class="button " href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
 </div>

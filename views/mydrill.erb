@@ -7,12 +7,20 @@
 
  </div>
 
+
 <div class="container">
+<h4>削除したい漢字</h4>
     <p id="message"><%= @message %></p>
     <form action="/user/kanji_deleter" method="POST">
-        <input name="kanji">
-        <input type="submit" value="削除">
-    </form>
+<select name="kanji">
+<% current_user.kanjis.each do |kanji| %>
+        <span><option><%= kanji.kanji%></option></span>
+<br>
+ <% end %>
+<input type="submit" onclick="alert('削除しました')　" value="削除">
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<a class="button" href="/user/mypage">	戻る</a>
 </div>
 
 

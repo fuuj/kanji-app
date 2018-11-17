@@ -82,12 +82,13 @@ class KanjiApp < Sinatra::Base
       kanji = Kanji.find_by(kanji: params[:kanji])
       if not kanji
         # 漢字がDBになければエラーメッセージを返す
-        @error = ['その漢字は登録できません']
+        @message= 'その漢字はありません.'
+
       elsif not current_user.kanjis.exists?(id: kanji.id)
         # ドリルに漢字を登録する
         creation = current_user.creations.create(kanji_id: kanji.id)
         if creation.save
-          @message= '「' + kanji.kanji + '」を登録しました.'
+         @message= '「' + kanji.kanji + '」を登録しました.'
         else
           @error = creation.errors.full_messages
         end
