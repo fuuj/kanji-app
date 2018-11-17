@@ -92,7 +92,7 @@ class KanjiApp < Sinatra::Base
           @error = creation.errors.full_messages
         end
       end
-      redirect '/mypage'
+      redirect '/user/mypage'
     end
 
     get '/mydrill' do
