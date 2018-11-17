@@ -5,7 +5,7 @@ class User < ActiveRecord::Base
   has_many :creations, dependent: :destroy
   has_many :kanjis, through: :creations
   has_many :readings, through: :kanjis
-  has_many :answers
+  has_many :answers, through: :creations
 
   validates :name, :email, presence: true
   validates :name, :email, length: {in: 3..20}

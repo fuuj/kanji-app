@@ -83,20 +83,24 @@ class KanjiApp < Sinatra::Base
     end
 
     post '/kanji_register' do
-      kanji = Kanji.find_by(kanji: params[:kanji])
-      if not kanji
-        # 漢字がDBになければエラーメッセージを返す
-        @error = ['その漢字は登録できません']
-      elsif not current_user.kanjis.exists?(id: kanji.id)
-        # ドリルに漢字を登録する
-        creation = current_user.creations.create(kanji_id: kanji.id)
-        if creation.save
-          @message= '「' + kanji.kanji + '」を登録しました.'
-        else
-          @error = creation.errors.full_messages
+      params[:kanji].each_char do |c|
+        if c =~ /\p{Han}/
+          kanji = Kanji.find_by(kanji: c)
+          if not kanji
+          # 漢字がDBになければエラーメッセージを返す
+          @error = ['その漢字は登録できません']
+          elsif not current_user.kanjis.exists?(id: kanji.id)
+          # ドリルに漢字を登録する
+          creation = current_user.creations.create(kanji_id: kanji.id)
+        end
+          if creation.save
+            @message= '「' + kanji.kanji + '」を登録しました.'
+          else
+            @error = creation.errors.full_messages
+          end
         end
       end
-      redirect '/mypage'
+      redirect '/user/mypage'
     end
 
     get '/mydrill' do
@@ -127,9 +131,40 @@ class KanjiApp < Sinatra::Base
       end
     end
 
+
+    def user_kanjis(current_user)
+      kanjis = []
+      current_user.kanjis.each do |kanji| #current_userの持つ漢字全てに以下の条件で試す.
+        
+        i = 0
+        acc = accuracy(current_user)
+        if acc <= 0.50 then #正答率0~50% 
+          #出題するクイズを持ってくる入れ物の中に8回入れる
+          while i < 8 do
+            kanjis.push(kanji)
+            i = i + 1
+          end
+        else #正答率50%~
+          #出題するクイズを持ってくる入れ物の中に1回入れる
+          kanjis.push(kanji)
+        end
+      end
+      return kanjis
+    end
+
     def kanji_quiz()
+      if(current_user == nil)
+        has_kanjis = false
+      else
+        has_kanjis = current_user.kanjis.length>0
+      end
+      
       # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      kanjis = current_user ? current_user.kanjis : Kanji.all
+      if has_kanjis then
+        kanjis = user_kanjis(current_user)
+      else
+        kanjis = Kanji.all
+      end
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
@@ -155,8 +190,18 @@ class KanjiApp < Sinatra::Base
     end
 
     def reading_quiz()
+      if(current_user == nil)
+        has_kanjis = false
+      else
+        has_kanjis = current_user.kanjis.length>0
+      end
       # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      kanjis = current_user ? current_user.kanjis : Kanji.all
+      if has_kanjis then
+        kanjis = user_kanjis(current_user)
+      else
+        kanjis = Kanji.all
+      end
+
       # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
       answer_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
@@ -181,9 +226,46 @@ class KanjiApp < Sinatra::Base
       # [String, Array<String>, Integer, Creation]
       [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
     end
+
+    def _accuracy(accuracy_correct,ox)
+      count = accuracy_correct.sum
+      #みらいよち(byきっつー)
+      count = count + ox
+      #０から１の範囲で正解率を返す(除算結果をfloatにするためにto_fで明示的に処理)
+      if accuracy_correct.length.to_f == 0 then
+        accuracy_final = 0
+      else
+        accuracy_final = count.to_f/(accuracy_correct.length+1).to_f
+      end
+      #小数点以下第2位までにする
+      accuracy_final = accuracy_final.round(2)
+      accuracy_final
+    end
+
+    def kanji_accuracy(creation,ox)
+      accuracy_correct = creation.answers.pluck(:correct)
+      _accuracy(accuracy_correct,ox)
+    end
+
+    def user_accuracy(creation,ox)
+      accuracy_correct = current_user.answers.pluck(:correct)
+      _accuracy(accuracy_correct,ox)
+    end
+
+    def accuracy(creation)
+      accuracy_correct = creation.answers.pluck(:correct)
+      count = accuracy_correct.sum
+      if accuracy_correct.length.to_f == 0 then
+        accuracy_final = 0
+      else
+        accuracy_final = count.to_f/(accuracy_correct.length).to_f
+      end
+      accuracy_final = accuracy_final.round(2)
+      accuracy_final
+    end
+
   end # helpers end
 
   run!
 end # Class end
-
 

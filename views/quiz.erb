@@ -1,14 +1,13 @@
+<%# ランダムにクイズの種類を決める %>
+<% if rand(2) == 1 %>
+    <%     theme, choices, answer_place, creation = kanji_quiz %>
+    <%     quiz_msg = "「#{theme}」は, なんと読む?" %>
+<% else %>
+    <%     theme, choices, answer_place, creation = reading_quiz %>
+    <%     quiz_msg = "「#{theme}」は, どんな漢字か?" %>
+<% end %>
 
 <div id="quiz" class="container">
-    <%# ランダムにクイズの種類を決める %>
-    <% if rand(2) == 1 %>
-        <%     theme, choices, answer_place, creation = kanji_quiz %>
-        <%     quiz_msg = "「#{theme}」は, なんと読む?" %>
-    <% else %>
-        <%     theme, choices, answer_place, creation = reading_quiz %>
-        <%     quiz_msg = "「#{theme}」は, どんな漢字か?" %>
-    <% end %>
-
     <h2>問題</h2>
     <p><%= quiz_msg %></p>
     <div id="choices" ></div>
@@ -49,19 +48,18 @@
         });
     };
     </script>
-
-    <% # 選択肢を作って表示する %>
-    <script>
-    var answer_place = <%= answer_place %>; // Integer
-    var stringChoices = <%= choices %>; // Array<String>
-    var choices = document.getElementById('choices');
-    for (var n=0; n<4; n++) {
-        var button = document.createElement('button');
-        button.className = 'button';
-        button.innerText = stringChoices[n];
-        button.onclick = n == answer_place ? msgt : msgf;
-        choices.appendChild(button);
-    }
-    </script>
 </div>
 
+<% # 選択肢を作って表示する %>
+<script>
+var answer_place = <%= answer_place %>; // Integer
+var stringChoices = <%= choices %>; // Array<String>
+var choices = document.getElementById('choices');
+for (var n=0; n<4; n++) {
+    var button = document.createElement('a');
+    button.className = 'button choice';
+    button.innerText = stringChoices[n];
+    button.onclick = n == answer_place ? msgt : msgf;
+    choices.appendChild(button);
+}
+</script>
