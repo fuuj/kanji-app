@@ -123,14 +123,40 @@ class KanjiApp < Sinatra::Base
       end
     end
 
+
+    def user_kanjis(current_user)
+      kanjis = []
+      current_user.kanjis.each do |kanji| #current_userの持つ漢字全てに以下の条件で試す.
+        
+        i = 0
+        acc = accuracy(current_user)
+        if acc <= 0.50 then #正答率0~50% 
+          #出題するクイズを持ってくる入れ物の中に8回入れる
+          while i < 8 do
+            kanjis.push(kanji)
+            i = i + 1
+          end
+        else #正答率50%~
+          #出題するクイズを持ってくる入れ物の中に1回入れる
+          kanjis.push(kanji)
+        end
+      end
+      return kanjis
+    end
+
     def kanji_quiz()
       if(current_user == nil)
         has_kanjis = false
       else
         has_kanjis = current_user.kanjis.length>0
       end
-      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.     
-      kanjis = has_kanjis ? current_user.kanjis : Kanji.all
+      
+      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
+      if has_kanjis then
+        kanjis = user_kanjis(current_user)
+      else
+        kanjis = Kanji.all
+      end
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
@@ -162,7 +188,12 @@ class KanjiApp < Sinatra::Base
         has_kanjis = current_user.kanjis.length>0
       end
       # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      kanjis = has_kanjis ? current_user.kanjis : Kanji.all
+      if has_kanjis then
+        kanjis = user_kanjis(current_user)
+      else
+        kanjis = Kanji.all
+      end
+
       # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
       answer_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
@@ -229,5 +260,4 @@ class KanjiApp < Sinatra::Base
 
   run!
 end # Class end
-
 
