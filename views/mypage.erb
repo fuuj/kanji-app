@@ -1,17 +1,30 @@
-<h2>マイページ</h2>
-<% if @error %>
-    <% @error.each do |s| %>
-        <p class="error"><%= s %></p>
-    <% end %>
-<% end %>
-<p>ようこそ, <%= current_user.name %> さん.</p>
-<p id="message"><%= @message %></p>
-<form action="/user/kanji_register" method="POST" class="container">
-    <input name="kanji" placeholder="ドリルに追加したい漢字を入れてください">
-    <input type="submit" value="登録">
-</form>
+
+<h3>ようこそ, <%= current_user.name %> さん.</h3>
+<a href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
+
+<div class="container">
+    <input type="text" id="kanji-input" placeholder="ドリルに追加したい漢字を入れてください">
+    <input type="submit" value="追加" onclick="postForm(this)">
+    <div id="msg" ></div>
+</div>
+
 <a class="button small-button" href="/user/mytest">テストを受ける</a>
 <a class="button small-button" href="/user/mydrill">ドリルを見る</a>
-<br>
-<br>
-<a class="button small-button" href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
+
+<script>
+ function postForm(button) {
+     var setting = {
+        type: 'POST',
+        url: '/user/add_kanji',
+        data: { kanji: $('#kanji-input').val() },
+     };
+     $.ajax(setting).done((json) => {
+        $('#msg').empty();
+        for (let key in json) {
+            if (json[key] != '') {
+                $('#msg').append($('<p>', {text: key + ': ' + json[key]}));
+            }
+        }
+     });
+ }
+</script>

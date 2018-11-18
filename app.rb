@@ -5,6 +5,7 @@ require 'bundler/setup'
 Bundler.require
 # init.rbに書かれているmodelsをrequireする.
 require_relative 'models/init'
+require 'sinatra/json'
 
 class KanjiApp < Sinatra::Base
   # Sinatra起動中にこのファイルに加えた変更がリアルタイムに反映されるのでとっても楽.
@@ -82,25 +83,37 @@ class KanjiApp < Sinatra::Base
       erb :mypage
     end
 
-    post '/kanji_register' do
+    post '/add_kanji' do
+      cannot_add = ''
+      added = ''
+      not_added = ''
       params[:kanji].each_char do |c|
+        # cが漢字のとき
         if c =~ /\p{Han}/
           kanji = Kanji.find_by(kanji: c)
+          # 漢字がkanjisにないとき
           if not kanji
-          # 漢字がDBになければエラーメッセージを返す
-          @error = ['その漢字は登録できません']
+            cannot_add += c + ' '
+          # 漢字をユーザーが未登録のとき
           elsif not current_user.kanjis.exists?(id: kanji.id)
-          # ドリルに漢字を登録する
-          creation = current_user.creations.create(kanji_id: kanji.id)
-        end
-          if creation.save
-            @message= '「' + kanji.kanji + '」を登録しました.'
+            creation = current_user.creations.create(kanji_id: kanji.id)
+            if creation.save
+              added += kanji.kanji + ' '
+            else
+              not_added += kanji.kanji + ' '
+            end
+          # 登録済みのとき
           else
-            @error = creation.errors.full_messages
+            not_added += kanji.kanji + ' '
           end
         end
       end
-      redirect '/user/mypage'
+      data = {
+        cannot_add: cannot_add,
+        added: added,
+        not_added: not_added
+      }
+      json data
     end
 
     get '/mydrill' do
@@ -121,7 +134,6 @@ class KanjiApp < Sinatra::Base
     end
   end # namespace end
 
-
   helpers do
     def current_user
       if session[:user_id]
@@ -131,11 +143,9 @@ class KanjiApp < Sinatra::Base
       end
     end
 
-
     def user_kanjis(current_user)
       kanjis = []
       current_user.kanjis.each do |kanji| #current_userの持つ漢字全てに以下の条件で試す.
-        
         i = 0
         acc = accuracy(current_user)
         if acc <= 0.50 then #正答率0~50% 
@@ -158,7 +168,6 @@ class KanjiApp < Sinatra::Base
       else
         has_kanjis = current_user.kanjis.length>0
       end
-      
       # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
       if has_kanjis then
         kanjis = user_kanjis(current_user)
