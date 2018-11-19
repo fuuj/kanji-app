@@ -2,5 +2,5 @@
 
 <h2>あなたの漢字ドリル</h2>
 <% current_user.kanjis.each do |kanji| %>
-    <div class="button kanji-button"><%= kanji.kanji%></div>
+    <div class="button single-kanji"><%= kanji.kanji%></div>
 <% end %>
