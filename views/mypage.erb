@@ -14,12 +14,12 @@
 <script>
  function postForm(button) {
      var setting = {
-        type: 'POST',
-        url: '/user/add_kanji',
-        data: { kanji: $('#kanji-input').val() },
+         type: 'POST',
+         url: '/user/add_kanji',
+         data: { kanji: $('#kanji-input').val() },
      };
      $.ajax(setting).done((json) => {
-        $('#msg').empty();
+         /* $('#msg').empty(); */
         for (let key in json) {
             if (json[key] != '') {
                 $('#msg').append($('<p>', {text: key + ': ' + json[key]}));

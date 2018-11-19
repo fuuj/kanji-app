@@ -28,6 +28,11 @@ h1 {
     font-size: 2rem;
     padding: 1rem 3rem;
 }
+.outline-button {
+    background-color: white;
+    border-color: crimson;
+    color: crimson;
+}
 .kanji-button {
     font-size: 3rem;
     padding: 1rem 1.5rem;

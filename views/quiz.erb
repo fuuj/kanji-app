@@ -9,7 +9,7 @@
 
 <div id="quiz" class="container">
     <h2>問題</h2>
-    <p><%= quiz_msg %></p>
+    <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
 
     <% #回答をコントローラーへ送信し, ページをリロードする%>
@@ -30,8 +30,6 @@
     }
 
     function form(creation_id, ox) { //ox->まるばつ(1or0)
-        // ページをリロードせずにクイズだけ入れ替える. このためのajaxという通信方法が殆どのブラウザで使える.
-        // JavaScriptだけでも書けるけど, jqueryというライブラリを使うとよりスマートに書ける.
         // もしユーザークイズならrecordアクションを引数付きで, ゲストならただのquizアクションをリクエスト:
         var ajaxHash = creation_id !== '' ? {
             type: 'POST',
