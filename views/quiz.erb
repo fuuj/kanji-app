@@ -11,6 +11,7 @@
     <h2><%= creation ? "問題" : "例題" %></h2>
     <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
+    <button id="nextButton" class="button outline-button" style="display: none" >次の問題</button>
 
     <% #回答をコントローラーへ送信し, ページをリロードする%>
     <script>
@@ -26,7 +27,7 @@
              var icon = document.getElementById('icon' + n);
              icon.style.display = 'unset';
          }
-         // もしユーザークイズならrecordアクションを引数付きで, ゲストならただのquizアクションをリクエスト
+         // もしユーザークイズならrecordアクションを引数付きで, ゲストならただのquizアクションをリクエストする
          var button = event.currentTarget
          var setting = creation_id !== '' ? {
              type: 'POST',
@@ -36,11 +37,12 @@
              type: 'GET',
              url: '/quiz'
          };
-        // ajaxリクエストが成功したらnミリ秒後にquizを入れ替える
-        var n = 3000;
-         $.ajax(setting).done((newQuiz) =>
-             window.setTimeout(() => $('#quiz').replaceWith(newQuiz), n)
-         );
+         // 次の問題をロードするボタンを表示する
+         var nextButton = document.getElementById('nextButton')
+         nextButton.onclick = () => {
+             $.ajax(setting).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
+         };
+         nextButton.style.display = 'unset';
     };
     </script>
     <% # 選択肢を作って表示する %>
@@ -62,7 +64,7 @@
          button.appendChild(icon);
          button.appendChild(text);
          choices.appendChild(button);
-         if (n == 1) { // 2行目にうつる
+         if (n == 1) { // 1段下げて表示
              choices.appendChild(document.createElement('br'));
          }
      }
