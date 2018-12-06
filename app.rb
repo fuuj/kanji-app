@@ -70,7 +70,7 @@ class KanjiApp < Sinatra::Base
     erb :management
   end
 
-  delete '/management/delUser' do
+  post '/delUser' do
     User.destroy(params[:id])
     redirect '/management'
   end

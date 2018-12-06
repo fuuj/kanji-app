@@ -8,7 +8,7 @@
 <% end %>
 
 <div id="quiz" class="container">
-    <h2>問題</h2>
+    <h2><%= creation ? "問題" : "例題" %></h2>
     <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
 
