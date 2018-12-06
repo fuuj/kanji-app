@@ -12,6 +12,7 @@
     <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
     <button id="nextButton" class="button outline-button" style="display: none" >次の問題</button>
+    <ul id="msg" ></ul>
 
     <% #回答をコントローラーへ送信し, ページをリロードする%>
     <script>
@@ -27,20 +28,22 @@
              var icon = document.getElementById('icon' + n);
              icon.style.display = 'unset';
          }
-         // もしユーザークイズならrecordアクションを引数付きで, ゲストならただのquizアクションをリクエストする
-         var button = event.currentTarget
-         var setting = creation_id !== '' ? {
-             type: 'POST',
-             url: '/user/record',
-             data: { creation_id: creation_id, ox: button.value }
-         } : {
-             type: 'GET',
-             url: '/quiz'
-         };
+
+         var pushedButton = event.currentTarget
+         if (creation_id != "") {
+             var url = '/user/record'
+             var data = { creation_id: creation_id, ox: pushedButton.value }
+             $.post(url, data).done((json) => {
+                 for (let key in json) {
+                     $('#msg').append($('<li>', {text: key + ': ' + json[key]}));
+                 }
+             });
+         }
+
          // 次の問題をロードするボタンを表示する
          var nextButton = document.getElementById('nextButton')
          nextButton.onclick = () => {
-             $.ajax(setting).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
+             $.get('/quiz').done((newQuiz) => $('#quiz').replaceWith(newQuiz));
          };
          nextButton.style.display = 'unset';
     };

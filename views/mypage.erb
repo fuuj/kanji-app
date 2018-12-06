@@ -1,5 +1,5 @@
 
-<h3>ようこそ, <%= current_user.name %> さん.</h3>
+<h3>ようこそ, <%= current_user.email %> さん.</h3>
 <a href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
 
 <div class="container">
@@ -19,7 +19,6 @@
          data: { kanji: $('#kanji-input').val() },
      };
      $.ajax(setting).done((json) => {
-         /* $('#msg').empty(); */
         for (let key in json) {
             if (json[key] != '') {
                 $('#msg').append($('<p>', {text: key + ': ' + json[key]}));

@@ -43,7 +43,7 @@ class KanjiApp < Sinatra::Base
   post '/signup' do
     user = User.new(
         id: nil,
-        name: params[:name],
+        name: params[:email],
         email: params[:email],
         password: params[:password],
         password_confirmation: params[:password_confirmation]
@@ -128,9 +128,14 @@ class KanjiApp < Sinatra::Base
       answer = Answer.new(
         creation_id: params[:creation_id],
         correct: params[:ox]
-        )
+      )
       answer.save!
-      redirect '/quiz'
+      creation = Creation.find(params[:creation_id])
+      data = {
+        kanji_accuracy: kanji_accuracy(creation),
+        total_accuracy: total_accuracy(creation)
+      }
+      json data
     end
   end # namespace end
 
@@ -145,18 +150,18 @@ class KanjiApp < Sinatra::Base
 
     def user_kanjis(current_user)
       kanjis = []
-      current_user.kanjis.each do |kanji| #current_userの持つ漢字全てに以下の条件で試す.
+      current_user.creations.each do |c| #current_userの持つ漢字全てに以下の条件で試す.
         i = 0
-        acc = accuracy(current_user)
-        if acc <= 0.50 then #正答率0~50% 
+        acc = kanji_accuracy(c)
+        if acc <= 0.50 then #正答率0~50%
           #出題するクイズを持ってくる入れ物の中に8回入れる
           while i < 8 do
-            kanjis.push(kanji)
+            kanjis.push(c.kanji)
             i = i + 1
           end
         else #正答率50%~
           #出題するクイズを持ってくる入れ物の中に1回入れる
-          kanjis.push(kanji)
+          kanjis.push(c.kanji)
         end
       end
       return kanjis
@@ -236,41 +241,20 @@ class KanjiApp < Sinatra::Base
       [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
     end
 
-    def _accuracy(accuracy_correct,ox)
-      count = accuracy_correct.sum
-      #みらいよち(byきっつー)
-      count = count + ox
-      #０から１の範囲で正解率を返す(除算結果をfloatにするためにto_fで明示的に処理)
-      if accuracy_correct.length.to_f == 0 then
-        accuracy_final = 0
-      else
-        accuracy_final = count.to_f/(accuracy_correct.length+1).to_f
-      end
-      #小数点以下第2位までにする
+    def accuracy(binaries)
+      accuracy_final = binaries.length == 0 ? 0 : binaries.sum.to_f / binaries.length
       accuracy_final = accuracy_final.round(2)
       accuracy_final
     end
 
-    def kanji_accuracy(creation,ox)
-      accuracy_correct = creation.answers.pluck(:correct)
-      _accuracy(accuracy_correct,ox)
+    def kanji_accuracy(creation)
+      binaries = creation.answers.pluck(:correct)
+      accuracy(binaries)
     end
 
-    def user_accuracy(creation,ox)
-      accuracy_correct = current_user.answers.pluck(:correct)
-      _accuracy(accuracy_correct,ox)
-    end
-
-    def accuracy(creation)
-      accuracy_correct = creation.answers.pluck(:correct)
-      count = accuracy_correct.sum
-      if accuracy_correct.length.to_f == 0 then
-        accuracy_final = 0
-      else
-        accuracy_final = count.to_f/(accuracy_correct.length).to_f
-      end
-      accuracy_final = accuracy_final.round(2)
-      accuracy_final
+    def total_accuracy(creation)
+      binaries = current_user.answers.pluck(:correct)
+      accuracy(binaries)
     end
 
   end # helpers end
