@@ -1,5 +1,6 @@
 <%# ランダムにクイズの種類を決める %>
 <% isTest = locals[:isTest] %>
+<% nQuiz = 10 %>
 <% kanjis = isTest ? current_user.kanjis : Kanji.all %>
 <% if rand(2) == 1 %>
 <%     theme, choices, answer_place, creation = kanji_quiz(kanjis) %>
@@ -10,7 +11,7 @@
 <% end %>
 
 <div id="quiz" >
-    <h2><%= isTest ? "問題 " + locals[:n].to_s + '/10' : "例題" %></h2>
+    <h2><%= isTest ? "問題 " + locals[:n].to_s + '/' + nQuiz.to_s : "例題" %></h2>
     <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
     <button id="nextButton" class="button outline-button" style="display: none" >次の問題</button>
@@ -18,9 +19,11 @@
 
     <% #回答をコントローラーへ送信し, ページをリロードする%>
     <script>
-    var creation_id = '<%= creation ? creation.id : '' %>'; // String
+    var creation_id = '<%= creation ? creation.id : '' %>' // String
     var isTest = <%= isTest.to_s %> // Boolean
-    var answer = '<%= choices[answer_place] %>'; // String
+    var currentN = <%= locals[:n].to_i %> // Int
+    var nQuiz = <%= nQuiz %>
+    var answer = '<%= choices[answer_place] %>' // String
 
     function form(event) {
          // ボタンを押せなくする
@@ -42,13 +45,21 @@
                  }
              });
          }
-         // 次の問題をロードするボタンを表示する
-         var nextButton = document.getElementById('nextButton')
-         nextButton.onclick = () => {
-             var data = {n: <%= locals[:n].to_i + 1 %>, isTest: isTest}
-             $.get('/quiz', data).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
-         };
-         nextButton.style.display = 'unset';
+         if (isTest && currentN >= nQuiz) {
+             $('#nextButton').replaceWith($('<a>', {
+                 id: 'enqButton',
+                 class: $('#nextButton').attr('class'),
+                 href: '/user/enquete'
+             }))
+             $('#enqButton').text('おしまい(アンケートへ)')
+         } else {
+            // 次の問題をロードするボタンを表示する
+            $('#nextButton').click(() => {
+                var data = {n: currentN + 1, isTest: isTest}
+                $.get('/quiz', data).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
+            })
+         }
+         $('#nextButton').css('display', 'unset')
     };
     </script>
     <% # 選択肢を作って表示する %>
