@@ -8,7 +8,7 @@
 <% end %>
 
 <div id="quiz" >
-    <h2><%= creation ? "問題" : "例題" %></h2>
+    <h2><%= creation ? "問題 " + locals[:n].to_s + '/10' : "例題" %></h2>
     <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
     <button id="nextButton" class="button outline-button" style="display: none" >次の問題</button>
@@ -42,7 +42,7 @@
          // 次の問題をロードするボタンを表示する
          var nextButton = document.getElementById('nextButton')
          nextButton.onclick = () => {
-             $.get('/quiz').done((newQuiz) => $('#quiz').replaceWith(newQuiz));
+             $.get('/quiz', {n: <%= locals[:n] + 1 %>}).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
          };
          nextButton.style.display = 'unset';
     };

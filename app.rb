@@ -63,7 +63,8 @@ class KanjiApp < Sinatra::Base
   end
 
   get '/quiz' do
-    erb :quiz, layout: nil
+    puts('/quiz,params',params)
+    erb :quiz, layout: nil, locals: { n: params[:n].to_i }
   end
 
   get '/management' do
