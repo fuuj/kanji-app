@@ -1,7 +1,7 @@
 # coding: utf-8
 
 class User < ActiveRecord::Base
-  # (id, name, email, password)
+  # (id, name, email, password, message)
   has_many :creations, dependent: :destroy
   has_many :kanjis, through: :creations
   has_many :readings, through: :kanjis

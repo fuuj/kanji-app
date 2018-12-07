@@ -3,10 +3,10 @@
 <a href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
 <hr>
 <form id="kanjiForm"  >
-    <p>日本語検定に出てくる漢字を覚えませんか? <br><a target="_blank" rel="noopener noreferrer" href="https://www.nihongo-pro.com/jp/kanji-pal/list/jlpt">nihongo-pro.com</a>から, 漢字をコピーしてきましょう. </p>
+    <p>日本語検定に出てくる漢字を覚えませんか? <br><a target="_blank" rel="noopener noreferrer" href="https://www.nihongo-pro.com/jp/kanji-pal/list/jlpt">nihongo-pro.com</a>から, 漢字をコピー&ペーストしてみましょう. </p>
     <input type="text" id="kanjiInput" placeholder="ドリルに追加したい漢字を入力してください. 文章でもOKです.">
     <input type="submit" value="追加">
-    <a class="button small-button" href="/user/mytest">テストを受ける</a>
+    <a id="testButton" class="button small-button" <%= has_kanjis ? 'href="/user/mytest"' : '' %>">テストを受ける</a>
     <dl id="msg" ></dl>
 </form>
 <hr>
@@ -35,6 +35,7 @@
                  if (key == 'added') {
                      $('#kanjis').prepend($('<span>', {text: json[key], style: 'color: crimson'}))
                      $('#noKanjiMsg').remove()
+                     $('#testButton').attr('href', '/user/mytest')
                  }
              }
          }

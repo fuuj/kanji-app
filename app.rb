@@ -63,8 +63,8 @@ class KanjiApp < Sinatra::Base
   end
 
   get '/quiz' do
-    puts('/quiz,params',params)
-    erb :quiz, layout: nil, locals: { n: params[:n].to_i }
+    locals = { n: params[:n].to_i, isTest: params[:isTest] == 'true' }
+    erb :quiz, layout: nil, locals: locals
   end
 
   get '/management' do
@@ -79,6 +79,14 @@ class KanjiApp < Sinatra::Base
   namespace '/user' do
     # このnamespace内のアクションはユーザー様以外お断り
     before { redirect '/' unless current_user }
+
+    get '/enquete' do
+      erb :enquete
+    end
+
+    post '/enquete' do
+      current_user.update_attribute('message', params.to_s)
+    end
 
     get '/mypage' do
       erb :mypage
@@ -150,7 +158,7 @@ class KanjiApp < Sinatra::Base
       end
     end
 
-    def user_kanjis(current_user)
+    def user_kanjis()
       kanjis = []
       current_user.creations.each do |c| #current_userの持つ漢字全てに以下の条件で試す.
         i = 0
@@ -169,18 +177,11 @@ class KanjiApp < Sinatra::Base
       return kanjis
     end
 
-    def kanji_quiz()
-      if(current_user == nil)
-        has_kanjis = false
-      else
-        has_kanjis = current_user.kanjis.length>0
-      end
-      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      if has_kanjis then
-        kanjis = user_kanjis(current_user)
-      else
-        kanjis = Kanji.all
-      end
+    def has_kanjis()
+      current_user ? current_user.kanjis.length > 0 : false
+    end
+
+    def kanji_quiz(kanjis)
       # kanjisから漢字を1つランダムに取る
       quiz_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
@@ -205,19 +206,7 @@ class KanjiApp < Sinatra::Base
       [quiz_kanji.kanji, final_readings, answer_reading_place, creation]
     end
 
-    def reading_quiz()
-      if(current_user == nil)
-        has_kanjis = false
-      else
-        has_kanjis = current_user.kanjis.length>0
-      end
-      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      if has_kanjis then
-        kanjis = user_kanjis(current_user)
-      else
-        kanjis = Kanji.all
-      end
-
+    def reading_quiz(kanjis)
       # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
       answer_kanji = kanjis.sample
       # その漢字の読みを1つランダムに取る
