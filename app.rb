@@ -84,6 +84,7 @@ class KanjiApp < Sinatra::Base
     end
 
     post '/add_kanji' do
+      puts('params:', params)
       cannot_add = ''
       added = ''
       not_added = ''

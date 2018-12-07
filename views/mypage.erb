@@ -1,29 +1,40 @@
 
 <h3>ようこそ, <%= current_user.email %> さん.</h3>
 <a href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
-
-<div class="container">
-    <input type="text" id="kanji-input" placeholder="ドリルに追加したい漢字を入れてください">
-    <input type="submit" value="追加" onclick="postForm(this)">
-    <div id="msg" ></div>
+<form id="kanjiForm" class="container" >
+    <input type="text" id="kanjiInput" placeholder="ドリルに追加したい漢字を入れてください">
+    <input type="submit" value="追加">
+    <a class="button small-button" href="/user/mytest">テストを受ける</a>
+    <dl id="msg" ></dl>
+</form>
+<h3>登録した漢字</h3>
+<div id="kanjis" >
+    <% if current_user.kanjis.length == 0  %>
+        <%= '<p id="noKanjiMsg" >no kanji added</p>' %>
+    <% else %>
+        <% current_user.kanjis.reverse.each do |kanji| %>
+            <%= '<span>' + kanji.kanji + '</span>' %>
+        <% end %>
+    <% end %>
 </div>
 
-<a class="button small-button" href="/user/mytest">テストを受ける</a>
-<a class="button small-button" href="/user/mydrill">ドリルを見る</a>
-
 <script>
- function postForm(button) {
-     var setting = {
-         type: 'POST',
-         url: '/user/add_kanji',
-         data: { kanji: $('#kanji-input').val() },
-     };
-     $.ajax(setting).done((json) => {
-        for (let key in json) {
-            if (json[key] != '') {
-                $('#msg').append($('<p>', {text: key + ': ' + json[key]}));
-            }
-        }
+ $('#kanjiForm').submit((event) => {
+     event.preventDefault()
+     var url = '/user/add_kanji';
+     var data = { kanji: $('#kanjiInput').val() };
+     $.post(url, data).done((json) => {
+         $('#msg').empty()
+         $('#kanjiInput').val('')
+         for (let key in json) {
+             if (json[key] != '') {
+                 $('#msg').append($('<li>', {text: key + ': ' + json[key]}));
+                 if (key == 'added') {
+                     $('#kanjis').prepend($('<span>', {text: json[key], style: 'color: crimson'}))
+                     $('#noKanjiMsg').remove()
+                 }
+             }
+         }
      });
- }
+ })
 </script>

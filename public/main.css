@@ -5,10 +5,13 @@ h1 {
     font-family: 'Permanent Marker', cursive;
     font-size: 10rem;
 }
+dl {
+    padding: 2rem 0rem 0rem 0rem;
+}
 .container {
-    padding: 6rem 1rem;
+    padding: 6rem 1rem 1rem 1rem;
     margin: 0 auto;
-    max-width: 80rem;
+    max-width: 60rem;
     text-align: center;
 }
 .button, .small-button, .outline-button,
@@ -39,8 +42,5 @@ input[type="submit"], input[type="button"] {
     border-color: crimson;
     color: crimson;
 }
-.single-kanji {
-    font-size: 3rem;
-    padding: 1rem 1.5rem;
-}
+
 
