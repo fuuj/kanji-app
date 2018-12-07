@@ -1,12 +1,14 @@
 
 <h3>ようこそ, <%= current_user.email %> さん.</h3>
 <a href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
-<form id="kanjiForm" class="container" >
+<hr>
+<form id="kanjiForm"  >
     <input type="text" id="kanjiInput" placeholder="ドリルに追加したい漢字を入れてください">
     <input type="submit" value="追加">
     <a class="button small-button" href="/user/mytest">テストを受ける</a>
     <dl id="msg" ></dl>
 </form>
+<hr>
 <h3>登録した漢字</h3>
 <div id="kanjis" >
     <% if current_user.kanjis.length == 0  %>
