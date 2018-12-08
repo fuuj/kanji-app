@@ -1,6 +1,6 @@
 <%# ランダムにクイズの種類を決める %>
 <% isTest = locals[:isTest] %>
-<% nQuiz = 10 %>
+<% nQuiz = 2 %>
 <% kanjis = isTest ? current_user.kanjis : Kanji.all %>
 <% if rand(2) == 1 %>
 <%     theme, choices, answer_place, creation = kanji_quiz(kanjis) %>
@@ -49,17 +49,18 @@
              $('#nextButton').replaceWith($('<a>', {
                  id: 'enqButton',
                  class: $('#nextButton').attr('class'),
-                 href: '/user/enquete'
+                 href: '/user/enquete',
+                 text: 'おしまい(アンケートへ)'
              }))
-             $('#enqButton').text('おしまい(アンケートへ)')
          } else {
             // 次の問題をロードするボタンを表示する
             $('#nextButton').click(() => {
                 var data = {n: currentN + 1, isTest: isTest}
                 $.get('/quiz', data).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
             })
+            $('#nextButton').css('display', 'unset')
+            $('#nextButton').get(0).scrollIntoView()
          }
-         $('#nextButton').css('display', 'unset')
     };
     </script>
     <% # 選択肢を作って表示する %>
