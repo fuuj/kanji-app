@@ -17,4 +17,4 @@ gem 'milligram'
 # gem 'concurrent-ruby','1.1.3'
 gem 'sqlite3', group: [:development, :test]
 gem 'pg', group: :production
-# gem "activerecord-postgresql-adapter", group: :production
+gem "activerecord-postgresql-adapter", group: :production
