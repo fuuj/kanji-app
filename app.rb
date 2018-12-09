@@ -3,8 +3,14 @@
 # Gemfileのgemをrequireする
 require 'bundler/setup'
 Bundler.require
-# init.rbに書かれているmodelsをrequireする.
-require_relative 'models/init'
+ActiveRecord::Base.configurations = YAML.load_file('./database.yml')
+ActiveRecord::Base.establish_connection(:development)
+# ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
+require_relative 'user'
+require_relative 'kanji'
+require_relative 'reading'
+require_relative 'creation'
+require_relative 'answer'
 require 'sinatra/json'
 
 class KanjiApp < Sinatra::Base
