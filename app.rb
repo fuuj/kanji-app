@@ -196,7 +196,12 @@ class KanjiApp < Sinatra::Base
       # その漢字の読みを1つランダムに取る
       answer_reading = quiz_kanji.readings.sample
       # 間違った読みを3つ取る
-      three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
+      # three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
+      three_wrong_readings = []
+      loop do
+        three_wrong_readings = Reading.all.sample(3)
+        break if three_wrong_readings & quiz_kanji.readings == []
+      end
       # wrong_readingsとanswer_readingを結合。final_answers[3]がanswer_reading
       final_readings = three_wrong_readings.push(answer_reading)
       # 文字列の配列にする
@@ -221,13 +226,14 @@ class KanjiApp < Sinatra::Base
       # その漢字の読みを1つランダムに取る
       quiz_reading = answer_kanji.readings.sample
       # 間違った漢字を3つ取る
-      three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
-      while(three_wrong_kanjis.any? {|kanji| kanji.reading == quiz_reading})
-        three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
+      wrong_kanjis = Kanji.all - [answer_kanji]
+      three_wrong_kanjis = wrong_kanjis.sample(3)
+      while(three_wrong_kanjis.any? {|kanji| kanji.readings & answer_kanji.readings != []})
+        three_wrong_kanjis = wrong_kanjis.sample(3)
       end
-      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji.kanji }
+      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji }
       # 正解・不正解4つのKanjiをシャッフルする
-      final_kanjis = wrong_kanjis.push(answer_kanji.kanji)
+      final_kanjis = wrong_kanjis + [answer_kanji.kanji]
       final_kanjis.shuffle!
       # answer_readingの場所を特定する。
       for num in 0..3
