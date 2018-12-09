@@ -1,2 +1,2 @@
 require "./app"
-run KanjiApp
+run Sinatra::Application
