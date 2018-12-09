@@ -3,9 +3,9 @@
 # Gemfileのgemをrequireする
 require 'bundler/setup'
 Bundler.require
-ActiveRecord::Base.configurations = YAML.load_file('./database.yml')
-ActiveRecord::Base.establish_connection(:development)
-# ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
+# ActiveRecord::Base.configurations = YAML.load_file('./database.yml')
+# ActiveRecord::Base.establish_connection(:development)
+ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
 require_relative 'user'
 require_relative 'kanji'
 require_relative 'reading'
