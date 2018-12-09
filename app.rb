@@ -4,15 +4,15 @@
 require 'bundler/setup'
 Bundler.require
 
-# ActiveRecord::Base.configurations = YAML.load_file('./database.yml')
+# ActiveRecord::Base.configurations = YAML.load_file('./config/database.yml')
 # ActiveRecord::Base.establish_connection(:development)
 ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
 
-require_relative 'models/user'
-require_relative 'models/kanji'
-require_relative 'models/reading'
-require_relative 'models/creation'
-require_relative 'models/answer'
+require './models/user'
+require './models/kanji'
+require './models/reading'
+require './models/creation'
+require './models/answer'
 
 require 'sinatra/json'
 
