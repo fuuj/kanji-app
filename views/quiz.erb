@@ -6,7 +6,7 @@
 <%     theme, choices, answer_place, creation = kanji_quiz(kanjis) %>
 <%     quiz_msg = "「#{theme}」は, なんと読む?" %>
 <% else %>
-    <%     theme, choices, answer_place, creation = reading_quiz(kanjis) %>
+<%     theme, choices, answer_place, creation = reading_quiz(kanjis) %>
 <%     quiz_msg = "「#{theme}」は, どんな漢字か?" %>
 <% end %>
 
@@ -14,7 +14,9 @@
     <h2><%= isTest ? "問題 " + locals[:n].to_s + '/' + nQuiz.to_s : "例題" %></h2>
     <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
-    <button id="nextButton" class="button outline-button" style="display: none" >次の問題</button>
+    <button id="nextButton" class="button outline-button" style="display: none" >
+      <span id="nextButtonMsg">次の問題</span>
+    </button>
     <dl id="msg" ></dl>
 
     <% #回答をコントローラーへ送信し, ページをリロードする%>
@@ -22,7 +24,7 @@
     var creation_id = '<%= creation ? creation.id : '' %>' // String
     var isTest = <%= isTest.to_s %> // Boolean
     var currentN = <%= locals[:n].to_i %> // Int
-    var nQuiz = <%= nQuiz %>
+    var nQuiz = <%= nQuiz %> // Int
     var answer = '<%= choices[answer_place] %>' // String
 
     function form(event) {
@@ -45,6 +47,7 @@
                  }
              });
          }
+         // テスト終了ならアンケートボタンを表示する
          if (isTest && currentN >= nQuiz) {
              $('#nextButton').replaceWith($('<a>', {
                  id: 'enqButton',
@@ -54,9 +57,11 @@
              }))
          } else {
             // 次の問題をロードするボタンを表示する
-            $('#nextButton').click(() => {
+            $('#nextButton').click(function () {
+                this.disabled = 'true'
                 var data = {n: currentN + 1, isTest: isTest}
                 $.get('/quiz', data).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
+                $('#nextButtonMsg').replaceWith($('<div>', { class: 'loader' }).get(0))
             })
             $('#nextButton').css('display', 'unset')
             $('#nextButton').get(0).scrollIntoView()
