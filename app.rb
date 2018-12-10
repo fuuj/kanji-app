@@ -4,9 +4,7 @@
 require 'bundler/setup'
 Bundler.require
 
-# ActiveRecord::Base.configurations = YAML.load_file('./config/database.yml')
-# ActiveRecord::Base.establish_connection(:development)
-ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
+ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || :development)
 
 require './models/user'
 require './models/kanji'
