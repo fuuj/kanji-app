@@ -190,59 +190,56 @@ class KanjiApp < Sinatra::Base
 
     def kanji_quiz(kanjis)
       # kanjisから漢字を1つランダムに取る
-      quiz_kanji = kanjis.sample
+      quiz_kanji_record = kanjis.sample
       # その漢字の読みを1つランダムに取る
-      answer_reading = quiz_kanji.readings.sample
-      # 間違った読みを3つ取る
-      # three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
-      three_wrong_readings = []
+      answer_reading = quiz_kanji_record.readings.sample.reading
+      # 選択肢(読み)の配列
+      final_readings = [answer_reading]
+      # 間違いの選択肢を作る
       loop do
-        three_wrong_readings = Reading.all.sample(3)
-        break if three_wrong_readings & quiz_kanji.readings == []
+        reading = Reading.all.sample.reading
+        final_readings.append(reading) unless final_readings.include?(reading)
+        break if final_readings.length == 4
       end
-      # wrong_readingsとanswer_readingを結合。final_answers[3]がanswer_reading
-      final_readings = three_wrong_readings.push(answer_reading)
-      # 文字列の配列にする
-      final_readings = final_readings.map {|item| item.reading}
       # final_readingsをシャッフルする。final_shuffleを上書きするので、answer_readingはどこにいるかわからない。
       final_readings.shuffle!
       # answer_readingの場所を特定する。
       for num in 0..3
-        if final_readings[num] == answer_reading.reading then
+        if final_readings[num] == answer_reading then
           answer_reading_place = num
         end
       end
       # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
-      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      creation = current_user ? current_user.creations.where(kanji_id: quiz_kanji_record.id).first : nil
       # [String, Array<String>, Integer, Creation]
-      [quiz_kanji.kanji, final_readings, answer_reading_place, creation]
+      [quiz_kanji_record.kanji, final_readings, answer_reading_place, creation]
     end
 
     def reading_quiz(kanjis)
       # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
-      answer_kanji = kanjis.sample
+      answer_kanji_record = kanjis.sample
       # その漢字の読みを1つランダムに取る
-      quiz_reading = answer_kanji.readings.sample
+      quiz_reading_record = answer_kanji_record.readings.sample
+      # 選択肢の配列
+      final_kanjis = [answer_kanji_record.kanji]
       # 間違った漢字を3つ取る
-      wrong_kanjis = Kanji.all - [answer_kanji]
-      three_wrong_kanjis = wrong_kanjis.sample(3)
-      while(three_wrong_kanjis.any? {|kanji| kanji.readings & answer_kanji.readings != []})
-        three_wrong_kanjis = wrong_kanjis.sample(3)
+      loop do
+        kanji_record = Kanji.all.sample
+        final_kanjis.append(kanji_record.kanji) unless kanji_record.readings.include?(quiz_reading_record.reading)
+        break if final_kanjis.length == 4
       end
-      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji }
       # 正解・不正解4つのKanjiをシャッフルする
-      final_kanjis = wrong_kanjis + [answer_kanji.kanji]
       final_kanjis.shuffle!
       # answer_readingの場所を特定する。
       for num in 0..3
-        if final_kanjis[num] == answer_kanji.kanji
+        if final_kanjis[num] == answer_kanji_record.kanji
           answer_kanji_place = num
         end
       end
       # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
-      creation = current_user ? current_user.creations.where(kanji_id:answer_kanji.id).first : nil
+      creation = current_user ? current_user.creations.where(kanji_id:answer_kanji_record.id).first : nil
       # [String, Array<String>, Integer, Creation]
-      [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
+      [quiz_reading_record.reading, final_kanjis, answer_kanji_place, creation]
     end
 
     def accuracy(binaries)
