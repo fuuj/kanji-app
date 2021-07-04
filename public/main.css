@@ -2,23 +2,43 @@ body {
     font-family: "Sawarabi Mincho";
 }
 h1 {
-    font-family: 'Permanent Marker', cursive;
     font-size: 10rem;
 }
+dl {
+    padding: 2rem 0rem 0rem 0rem;
+}
+/* https://www.w3schools.com/howto/howto_css_loader.asp */
+.loader {
+  display: inline-block;
+  margin: 30px;
+  border: 8px solid crimson;
+  border-radius: 50%;
+  border-top: 8px solid transparent;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .container {
-    padding: 6rem 3rem;
+    padding: 6rem 1rem 1rem 1rem;
     margin: 0 auto;
-    max-width: 80rem;
+    max-width: 60rem;
     text-align: center;
 }
-.button, .small-button, input[type="submit"] {
+.button, .small-button, .outline-button,
+input[type="submit"], input[type="button"] {
     background-color: crimson;
     border-color: crimson;
     color: white;
     font-weight: unset;
+    text-transform: unset;
     border-radius: 10rem;
     height: auto;
-    margin: 1.5rem 0.5rem;
+    margin: 0.5rem;
 }
 .button {
     font-size: 3rem;
@@ -28,8 +48,14 @@ h1 {
     font-size: 2rem;
     padding: 1rem 3rem;
 }
-.kanji-button {
-    font-size: 3rem;
-    padding: 1rem 1.5rem;
+.button[disabled] {
+    cursor: default;
+    opacity: .8;
 }
+.outline-button {
+    background-color: white;
+    border-color: crimson;
+    color: crimson;
+}
+
 

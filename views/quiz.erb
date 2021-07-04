@@ -1,89 +1,95 @@
-
 <%# ランダムにクイズの種類を決める %>
+<% isTest = locals[:isTest] %>
+<% nQuiz = 10 %>
+<% kanjis = isTest ? current_user.kanjis : Kanji.all %>
 <% if rand(2) == 1 %>
-<%     theme, choices, answer_place, creation = kanji_quiz %>
+<%     theme, choices, answer_place, creation = kanji_quiz(kanjis) %>
 <%     quiz_msg = "「#{theme}」は, なんと読む?" %>
 <% else %>
-<%     theme, choices, answer_place, creation = reading_quiz %>
+<%     theme, choices, answer_place, creation = reading_quiz(kanjis) %>
 <%     quiz_msg = "「#{theme}」は, どんな漢字か?" %>
 <% end %>
 
-<div id="quiz" class="container">
-    <div id="quiz-theme" >
-        <h2>問題</h2>
-        <h3><%= quiz_msg %></h3>
-    </div>
+<div id="quiz" >
+    <h2><%= isTest ? "問題 " + locals[:n].to_s + '/' + nQuiz.to_s : "例題" %></h2>
+    <h3><%= quiz_msg %></h3>
     <div id="choices" ></div>
+    <button id="nextButton" class="button outline-button" style="display: none" >
+      <span id="nextButtonMsg">次の問題</span>
+    </button>
+    <dl id="msg" ></dl>
+
+    <% #回答をコントローラーへ送信し, ページをリロードする%>
+    <script>
+    var creation_id = '<%= creation ? creation.id : '' %>' // String
+    var isTest = <%= isTest.to_s %> // Boolean
+    var currentN = <%= locals[:n].to_i %> // Int
+    var nQuiz = <%= nQuiz %> // Int
+    var answer = '<%= choices[answer_place] %>' // String
+
+    function form(event) {
+         // ボタンを押せなくする
+         var choices = document.getElementById('choices');
+         Array.from(choices.children).forEach((button) => button.disabled = 'true')
+        // ボタンにアイコンを表示する
+         for (let n=0; n<4; n++) {
+             var icon = document.getElementById('icon' + n);
+             icon.style.display = 'unset';
+         }
+         // テストなら正解率を表示する
+         if (isTest) {
+             var pushedButton = event.currentTarget
+             var url = '/user/record'
+             var data = { creation_id: creation_id, ox: pushedButton.value }
+             $.post(url, data).done((json) => {
+                 for (let key in json) {
+                     $('#msg').append($('<li>', {text: key + ' = ' + parseInt(100 * parseFloat(json[key])) + '%'}));
+                 }
+             });
+         }
+         // テスト終了ならアンケートボタンを表示する
+         if (isTest && currentN >= nQuiz) {
+             $('#nextButton').replaceWith($('<a>', {
+                 id: 'enqButton',
+                 class: $('#nextButton').attr('class'),
+                 href: '/user/enquete',
+                 text: 'おしまい(アンケートへ)'
+             }))
+         } else {
+            // 次の問題をロードするボタンを表示する
+            $('#nextButton').click(function () {
+                var data = {n: currentN + 1, isTest: isTest}
+                $.get('/quiz', data).done((newQuiz) => $('#quiz').replaceWith(newQuiz));
+                this.replaceWith($('<div>', { class: 'loader' }).get(0))
+            })
+            $('#nextButton').css('display', 'unset')
+            $('#nextButton').get(0).scrollIntoView()
+         }
+    };
+    </script>
+    <% # 選択肢を作って表示する %>
+    <script>
+     var answer_place = <%= answer_place %>; // Integer
+     var stringChoices = <%= choices %>; // Array<String>
+     var choices = document.getElementById('choices');
+     for (var n=0; n<4; n++) {
+         var button = document.createElement('button');
+         button.className = 'button';
+         button.value = n == answer_place ? 1 : 0; // 正答かどうか
+         button.onclick = form;
+         var text = document.createElement('span');
+         text.innerText = stringChoices[n];
+         var icon = document.createElement('i');
+         icon.id = 'icon' + n;
+         icon.className = n == answer_place ? 'fas fa-check' : 'fas fa-times';
+         icon.style.display = 'none';
+         button.appendChild(icon);
+         button.appendChild(text);
+         choices.appendChild(button);
+         if (n == 1) { // 1段下げて表示
+             choices.appendChild(document.createElement('br'));
+         }
+     }
+    </script>
 </div>
 
-<% #回答をコントローラーへ送信し, ページをリロードする%>
-<script>
-var creation_id = '<%= creation ? creation.id : "" %>'; // String
-var answer = '<%= choices[answer_place] %>'; // String
-
-
-    
-    //msgt(正解ver),msgf(不正解ver)は選択肢をクリックされた時に使われる関数
-    //引き数はともにボタンの値(選択肢の文字列)
-    //動作：
-    //1:正解、不正解を伝える
-    //2-1:creationあれば、ユーザーを識別できるものと正解・不正解を表すもの(1と0)を引数にform関数へ
-    //2-2:なければ、ページリロード(次の問題へ)
-function msgt(event) {
-    var kanji_accuracy = '<%=creation ? kanji_accuracy(creation,1) : "" %>'; //String
-    var user_accuracy = '<%=creation ? user_accuracy(creation,1) : "" %>'; //String
-    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '\n' + '正解です！' + 'あなたの正答率は,'+'[' + user_accuracy + ']' + '\n' + 'です！' + 'ちなみにこの漢字の正答率は,' + '[' + kanji_accuracy + ']' + '\n' + 'です!';
-    alert(result);
-    (creation_id !== '') ? form(creation_id, 1) : location.reload(); 
-}
-
-function msgf(event) {
-    var kanji_accuracy = '<%=creation ? kanji_accuracy(creation,0) : "" %>'; //String
-    var user_accuracy = '<%=creation ? user_accuracy(creation,0) : "" %>'; //String
-    var result = 'あなたが選んだのは,' + '[' + event.currentTarget.innerText + ']' + '不正解です！' + '\n' + '正解は' + answer + 'です。' + 'あなたの正答率は,'+'[' + user_accuracy + ']' + '\n' + 'です！' + 'ちなみにこの漢字の正答率は,' + '[' + kanji_accuracy + ']' + '\n' + 'です!';
-     alert(result);    
-     (creation_id !== '') ? form(creation_id ,0) : location.reload();
-    
-}
-
-    //app.rbの/recordへ値を送る関数form
-    //引き数はcreationとox(1or0)
-    //動作:
-        //送りたい値(request1,request2)をセットし、送る
-function form(creation_id, ox) { //ox->まるばつ(1or0)
-    var form = document.createElement('form');
-    var request1 = document.createElement('input');
-    var request2 = document.createElement('input');
-
-    form.method = 'POST';
-    form.action = '/user/record';
-
-    request1.type = 'hidden'; //入力フォームが表示されないように
-    request1.name = 'creation';
-    request1.value = creation_id;
-
-    request2.type = 'hidden'; //入力フォームが表示されないように
-    request2.name = 'ox';
-    request2.value = ox;
-
-    form.appendChild(request1);
-    form.appendChild(request2);
-    document.body.appendChild(form);
-
-    form.submit();
-}
-</script>
-
-<% # 選択肢を作って表示する %>
-<script>
-var answer_place = <%= answer_place %>; // Integer
-var stringChoices = <%= choices %>; // Array<String>
-var choices = document.getElementById('choices');
-for (var n=0; n<4; n++) {
-    var button = document.createElement('a');
-    button.className = 'button choice';
-    button.innerText = stringChoices[n];
-    button.onclick = n == answer_place ? msgt : msgf;
-    choices.appendChild(button);
-}
-</script>

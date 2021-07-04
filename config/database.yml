@@ -1,0 +1,12 @@
+development:
+  adapter: sqlite3
+  database: kanjiApp.db
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  url: <%= ENV['DATABASE_URL'] %>
+  # host: <%= ENV['DATABASE_HOST'] %>
+  # database: <%= ENV['DATABASE_NAME'] %>
+  # username: <%= ENV['DATABASE_USER'] %>
+  # password: <%= ENV['DATABASE_PASSWORD'] %>

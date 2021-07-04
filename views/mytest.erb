@@ -1,4 +1,4 @@
 
-<%= erb :quiz %>
-<a class="button small-button" href="/user/mypage">終わる</a>
+<%= erb :quiz, locals: { n: 1, isTest: true } %>
+<a class="button small-button outline-button" href="/user/mypage">終わる</a>
 

@@ -3,8 +3,16 @@
 # Gemfileのgemをrequireする
 require 'bundler/setup'
 Bundler.require
-# init.rbに書かれているmodelsをrequireする.
-require_relative 'models/init'
+
+ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || :development)
+
+require './models/user'
+require './models/kanji'
+require './models/reading'
+require './models/creation'
+require './models/answer'
+
+require 'sinatra/json'
 
 class KanjiApp < Sinatra::Base
   # Sinatra起動中にこのファイルに加えた変更がリアルタイムに反映されるのでとっても楽.
@@ -42,7 +50,7 @@ class KanjiApp < Sinatra::Base
   post '/signup' do
     user = User.new(
         id: nil,
-        name: params[:name],
+        name: params[:email],
         email: params[:email],
         password: params[:password],
         password_confirmation: params[:password_confirmation]
@@ -61,11 +69,16 @@ class KanjiApp < Sinatra::Base
     redirect '/'
   end
 
+  get '/quiz' do
+    locals = { n: params[:n].to_i, isTest: params[:isTest] == 'true' }
+    erb :quiz, layout: nil, locals: locals
+  end
+
   get '/management' do
     erb :management
   end
 
-  delete '/management/delUser' do
+  post '/delUser' do
     User.destroy(params[:id])
     redirect '/management'
   end
@@ -74,29 +87,50 @@ class KanjiApp < Sinatra::Base
     # このnamespace内のアクションはユーザー様以外お断り
     before { redirect '/' unless current_user }
 
+    get '/enquete' do
+      erb :enquete
+    end
+
+    post '/enquete' do
+      current_user.update_attribute('message', params.to_s)
+    end
+
     get '/mypage' do
       erb :mypage
     end
 
-    post '/kanji_register' do
+    post '/add_kanji' do
+      puts('params:', params)
+      cannot_add = ''
+      added = ''
+      not_added = ''
       params[:kanji].each_char do |c|
+        # cが漢字のとき
         if c =~ /\p{Han}/
           kanji = Kanji.find_by(kanji: c)
+          # 漢字がkanjisにないとき
           if not kanji
-          # 漢字がDBになければエラーメッセージを返す
-          @error = ['その漢字は登録できません']
+            cannot_add += c + ' '
+          # 漢字をユーザーが未登録のとき
           elsif not current_user.kanjis.exists?(id: kanji.id)
-          # ドリルに漢字を登録する
-          creation = current_user.creations.create(kanji_id: kanji.id)
-        end
-          if creation.save
-            @message= '「' + kanji.kanji + '」を登録しました.'
+            creation = current_user.creations.create(kanji_id: kanji.id)
+            if creation.save
+              added += kanji.kanji + ' '
+            else
+              not_added += kanji.kanji + ' '
+            end
+          # 登録済みのとき
           else
-            @error = creation.errors.full_messages
+            not_added += kanji.kanji + ' '
           end
         end
       end
-      redirect '/user/mypage'
+      data = {
+        cannot_add: cannot_add,
+        added: added,
+        not_added: not_added
+      }
+      json data
     end
 
     get '/mydrill' do
@@ -109,14 +143,18 @@ class KanjiApp < Sinatra::Base
 
     post '/record' do
       answer = Answer.new(
-        creation_id: params[:creation],
+        creation_id: params[:creation_id],
         correct: params[:ox]
-        )
-        answer.save!
-      redirect '/user/mytest'
+      )
+      answer.save!
+      creation = Creation.find(params[:creation_id])
+      data = {
+        kanji_accuracy: kanji_accuracy(creation),
+        total_accuracy: total_accuracy(creation)
+      }
+      json data
     end
   end # namespace end
-
 
   helpers do
     def current_user
@@ -127,137 +165,97 @@ class KanjiApp < Sinatra::Base
       end
     end
 
-
-    def user_kanjis(current_user)
+    def user_kanjis()
       kanjis = []
-      current_user.kanjis.each do |kanji| #current_userの持つ漢字全てに以下の条件で試す.
-        
+      current_user.creations.each do |c| #current_userの持つ漢字全てに以下の条件で試す.
         i = 0
-        acc = accuracy(current_user)
-        if acc <= 0.50 then #正答率0~50% 
+        acc = kanji_accuracy(c)
+        if acc <= 0.50 then #正答率0~50%
           #出題するクイズを持ってくる入れ物の中に8回入れる
           while i < 8 do
-            kanjis.push(kanji)
+            kanjis.push(c.kanji)
             i = i + 1
           end
         else #正答率50%~
           #出題するクイズを持ってくる入れ物の中に1回入れる
-          kanjis.push(kanji)
+          kanjis.push(c.kanji)
         end
       end
       return kanjis
     end
 
-    def kanji_quiz()
-      if(current_user == nil)
-        has_kanjis = false
-      else
-        has_kanjis = current_user.kanjis.length>0
-      end
-      
-      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      if has_kanjis then
-        kanjis = user_kanjis(current_user)
-      else
-        kanjis = Kanji.all
-      end
+    def has_kanjis()
+      current_user ? current_user.kanjis.length > 0 : false
+    end
+
+    def kanji_quiz(kanjis)
       # kanjisから漢字を1つランダムに取る
-      quiz_kanji = kanjis.sample
+      quiz_kanji_record = kanjis.sample
       # その漢字の読みを1つランダムに取る
-      answer_reading = quiz_kanji.readings.sample
-      # 間違った読みを3つ取る
-      three_wrong_readings = Reading.where.not(reading: quiz_kanji.readings).sample(3)
-      # wrong_readingsとanswer_readingを結合。final_answers[3]がanswer_reading
-      final_readings = three_wrong_readings.push(answer_reading)
-      # 文字列の配列にする
-      final_readings = final_readings.map {|item| item.reading}
+      answer_reading = quiz_kanji_record.readings.sample.reading
+      # 選択肢(読み)の配列
+      final_readings = [answer_reading]
+      # 間違いの選択肢を作る
+      loop do
+        reading = Reading.all.sample.reading
+        final_readings.append(reading) unless final_readings.include?(reading)
+        break if final_readings.length == 4
+      end
       # final_readingsをシャッフルする。final_shuffleを上書きするので、answer_readingはどこにいるかわからない。
       final_readings.shuffle!
       # answer_readingの場所を特定する。
       for num in 0..3
-        if final_readings[num] == answer_reading.reading then
+        if final_readings[num] == answer_reading then
           answer_reading_place = num
         end
       end
       # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
-      creation = current_user ? current_user.creations.where(kanji_id:quiz_kanji.id).first : nil
+      creation = current_user ? current_user.creations.where(kanji_id: quiz_kanji_record.id).first : nil
       # [String, Array<String>, Integer, Creation]
-      [quiz_kanji.kanji, final_readings, answer_reading_place, creation]
+      [quiz_kanji_record.kanji, final_readings, answer_reading_place, creation]
     end
 
-    def reading_quiz()
-      if(current_user == nil)
-        has_kanjis = false
-      else
-        has_kanjis = current_user.kanjis.length>0
-      end
-      # ユーザークイズはユーザーが保存した漢字から問題を作る. ゲストクイズならすべての漢字から作る.
-      if has_kanjis then
-        kanjis = user_kanjis(current_user)
-      else
-        kanjis = Kanji.all
-      end
-
+    def reading_quiz(kanjis)
       # kanjisから漢字を1つランダムに取る、それをクイズの回答とする
-      answer_kanji = kanjis.sample
+      answer_kanji_record = kanjis.sample
       # その漢字の読みを1つランダムに取る
-      quiz_reading = answer_kanji.readings.sample
+      quiz_reading_record = answer_kanji_record.readings.sample
+      # 選択肢の配列
+      final_kanjis = [answer_kanji_record.kanji]
       # 間違った漢字を3つ取る
-      three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
-      while(three_wrong_kanjis.any? {|kanji| kanji.reading == quiz_reading})
-        three_wrong_kanjis = Reading.where.not(reading: answer_kanji).sample(3)
+      loop do
+        kanji_record = Kanji.all.sample
+        final_kanjis.append(kanji_record.kanji) unless kanji_record.readings.include?(quiz_reading_record.reading)
+        break if final_kanjis.length == 4
       end
-      wrong_kanjis = three_wrong_kanjis.map {|item| item.kanji.kanji }
       # 正解・不正解4つのKanjiをシャッフルする
-      final_kanjis = wrong_kanjis.push(answer_kanji.kanji)
       final_kanjis.shuffle!
       # answer_readingの場所を特定する。
       for num in 0..3
-        if final_kanjis[num] == answer_kanji.kanji
+        if final_kanjis[num] == answer_kanji_record.kanji
           answer_kanji_place = num
         end
       end
       # ユーザーの回答をDBにインサートするためにはcreationが必要. ゲストならnilにしてインサートは行わない.
-      creation = current_user ? current_user.creations.where(kanji_id:answer_kanji.id).first : nil
+      creation = current_user ? current_user.creations.where(kanji_id:answer_kanji_record.id).first : nil
       # [String, Array<String>, Integer, Creation]
-      [quiz_reading.reading, final_kanjis, answer_kanji_place, creation]
+      [quiz_reading_record.reading, final_kanjis, answer_kanji_place, creation]
     end
 
-    def _accuracy(accuracy_correct,ox)
-      count = accuracy_correct.sum
-      #みらいよち(byきっつー)
-      count = count + ox
-      #０から１の範囲で正解率を返す(除算結果をfloatにするためにto_fで明示的に処理)
-      if accuracy_correct.length.to_f == 0 then
-        accuracy_final = 0
-      else
-        accuracy_final = count.to_f/(accuracy_correct.length+1).to_f
-      end
-      #小数点以下第2位までにする
+    def accuracy(binaries)
+      accuracy_final = binaries.length == 0 ? 0 : binaries.sum.to_f / binaries.length
       accuracy_final = accuracy_final.round(2)
       accuracy_final
     end
 
-    def kanji_accuracy(creation,ox)
-      accuracy_correct = creation.answers.pluck(:correct)
-      _accuracy(accuracy_correct,ox)
+    def kanji_accuracy(creation)
+      binaries = creation.answers.pluck(:correct)
+      accuracy(binaries)
     end
 
-    def user_accuracy(creation,ox)
-      accuracy_correct = current_user.answers.pluck(:correct)
-      _accuracy(accuracy_correct,ox)
-    end
-
-    def accuracy(creation)
-      accuracy_correct = creation.answers.pluck(:correct)
-      count = accuracy_correct.sum
-      if accuracy_correct.length.to_f == 0 then
-        accuracy_final = 0
-      else
-        accuracy_final = count.to_f/(accuracy_correct.length).to_f
-      end
-      accuracy_final = accuracy_final.round(2)
-      accuracy_final
+    def total_accuracy(creation)
+      binaries = current_user.answers.pluck(:correct)
+      accuracy(binaries)
     end
 
   end # helpers end

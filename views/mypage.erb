@@ -1,17 +1,47 @@
-<h2>マイページ</h2>
-<% if @error %>
-    <% @error.each do |s| %>
-        <p class="error"><%= s %></p>
-    <% end %>
-<% end %>
-<p>ようこそ, <%= current_user.name %> さん.</p>
-<p id="message"><%= @message %></p>
-<form action="/user/kanji_register" method="POST" class="container">
-    <input name="kanji" placeholder="ドリルに追加したい漢字を入れてください">
-    <input type="submit" value="登録">
+
+<h3>ようこそ, <%= current_user.email %> さん.</h3>
+<a href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
+<hr>
+<form id="kanjiForm"  >
+    <p>日本語検定に出てくる漢字を覚えませんか? <br><a target="_blank" rel="noopener noreferrer" href="https://www.nihongo-pro.com/jp/kanji-pal/list/jlpt">nihongo-pro.com</a>から, 漢字をコピー&ペーストしてみましょう. </p>
+    <input type="text" id="kanjiInput" placeholder="ドリルに追加したい漢字を入力してください. 文章でもOKです.">
+    <input type="submit" value="追加">
+    <a id="testButton" class="button small-button" <%= has_kanjis ? 'href="/user/mytest"' : '' %>">テストを受ける</a>
+    <dl id="msg" ></dl>
 </form>
-<a class="button small-button" href="/user/mytest">テストを受ける</a>
-<a class="button small-button" href="/user/mydrill">ドリルを見る</a>
-<br>
-<br>
-<a class="button small-button" href="/logout" onclick="alert('ログアウトしました')">ログアウト</a>
+<div id='loader' class='loader' style='display: none'></div>
+<hr>
+<h3>登録した漢字</h3>
+<div id="kanjis" >
+    <% if current_user.kanjis.length == 0  %>
+        <%= '<p id="noKanjiMsg" >no kanji added</p>' %>
+    <% else %>
+        <% current_user.kanjis.reverse.each do |kanji| %>
+            <%= '<span>' + kanji.kanji + '</span>' %>
+        <% end %>
+    <% end %>
+</div>
+
+<script>
+ $('#kanjiForm').submit((event) => {
+     $('#loader').css('display', 'inline-block')
+     event.preventDefault()
+     var url = '/user/add_kanji';
+     var data = { kanji: $('#kanjiInput').val() };
+     $.post(url, data).done((json) => {
+         $('#loader').css('display', 'none')
+         $('#msg').empty()
+         $('#kanjiInput').val('')
+         for (let key in json) {
+             if (json[key] != '') {
+                 $('#msg').append($('<li>', {text: key + ': ' + json[key]}));
+                 if (key == 'added') {
+                     $('#kanjis').prepend($('<span>', {text: json[key], style: 'color: crimson'}))
+                     $('#noKanjiMsg').remove()
+                     $('#testButton').attr('href', '/user/mytest')
+                 }
+             }
+         }
+     });
+ })
+</script>

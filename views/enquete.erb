@@ -1,0 +1,24 @@
+
+<h3>お疲れ様でした. アンケートにご協力ください.</h3>
+<form id="enqForm"  >
+    <textarea type="textArea" name="enq1" placeholder="このアプリの操作性についてどう感じましたか? どんなところが改善できそうですか?"></textarea>
+    <textarea type="textArea" name="enq2" placeholder="このアプリの見た目についてどう感じましたか? 分かりにくかったところはありませんか?"></textarea>
+    <textarea type="textArea" name="enq3" placeholder="その他, 気づいたことやアドバイスなどをいただけると嬉しいです."></textarea>
+    <br>
+    <input type="submit" value="送信">
+</form>
+<p id="msg" ></p>
+<a class="button small-button outline-button" href="/user/mypage">マイページ</a>
+
+<script>
+ $('#enqForm').submit((event) => {
+     event.preventDefault()
+     var url = '/user/enquete'
+     var data = $('#enqForm').serialize()
+     console.log('enqForm:', data)
+     $.post(url, data).done((json) => {
+         $('#msg').text('これでテストは終了です. ありがとうございました!')
+     })
+ })
+</script>
+
